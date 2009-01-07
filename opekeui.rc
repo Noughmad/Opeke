@@ -1,0 +1,28 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="Opeke" version="0.3">
+	<ToolBar name="mainToolBar" >
+		<text>Main Toolbar</text>
+		<Action name="build_action" />
+		<Action name="select_action" />
+		<Action name="block_action" />
+		<Action name="roof_action" />
+		<Menu name="build"><text>&amp;Round shapes</text>
+			<Action name="cylinder_action" />
+			<Action name="invCyl_action" />
+			<Action name="sphere_action" />
+		</Menu>
+	</ToolBar>
+<MenuBar>
+  <Menu name="action"><text>&amp;Actions</text>
+	<Action name="build_action" />
+	<Action name="select_action" />
+	<Menu name="build"><text>&amp;Build</text>
+		<Action name="block_action" />
+		<Action name="roof_action" />
+		<Action name="cylinder_action" />
+		<Action name="invCyl_action" />
+		<Action name="sphere_action" />
+	</Menu>
+  </Menu>
+</MenuBar>
+</kpartgui>
