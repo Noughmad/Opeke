@@ -19,5 +19,6 @@ opekeview.h
 opekeview_base.ui
 prefs_base.ui
 prefs_mouse.ui
-qogrewidget.h
 settings.kcfgc
+undoaction.cpp
+undoaction.h

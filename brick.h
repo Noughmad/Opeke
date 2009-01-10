@@ -21,13 +21,8 @@
 #ifndef BRICK_H
 #define BRICK_H
 
-
-#include <GL/gl.h>
-#include <GL/glu.h>
 #include <QtGui/QColor>
-
 #include <Ogre.h>
-
 #include <math.h>
 
 
@@ -80,8 +75,11 @@ class Brick
 		void setSelected ( bool s );
 		bool isSelected() const;
 		
-		Ogre::ColourValue toOgreColour(QColor c);
-		QColor toQColor(Ogre::ColourValue c);
+		static Ogre::ColourValue toOgreColour(QColor c);
+		static QColor toQColor(Ogre::ColourValue c);
+		
+		void hide();
+		void show();
 	
 	
 	protected:

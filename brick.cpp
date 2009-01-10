@@ -209,3 +209,13 @@ QColor Brick::toQColor ( Ogre::ColourValue c )
 {
 	return QColor ( c.r*255, c.g*255, c.b*255, c.a*255 );
 }
+
+void Brick::show()
+{
+	mNode->attachObject(mEntity);
+}
+
+void Brick::hide()
+{
+	mNode->detachObject(mEntity);
+}

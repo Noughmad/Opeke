@@ -3,7 +3,7 @@
   <general>
     <author>Miha Čančula</author>
     <email>miha@noughmad.org</email>
-    <version>0.2</version>
+    <version>0.4</version>
     <projectmanagement>KDevCustomProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <keywords>
@@ -15,7 +15,7 @@
     <projectname>Opeke</projectname>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
+    <description/>
     <ignoreparts/>
     <defaultencoding>utf8</defaultencoding>
     <versioncontrol>kdevsubversion</versioncontrol>
@@ -78,14 +78,14 @@
     <general>
       <dbgshell>libtool</dbgshell>
       <programargs/>
-      <gdbpath></gdbpath>
+      <gdbpath/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
       <runappinappdirectory>true</runappinappdirectory>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <raiseGDBOnStart>false</raiseGDBOnStart>
     </general>
     <display>
@@ -126,29 +126,29 @@
   <kdevcustomproject>
     <run>
       <mainprogram>/home/miha/kde-devel/bin/opeke</mainprogram>
-      <programargs></programargs>
+      <programargs/>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars/>
       <autoinstall>false</autoinstall>
       <autokdesu>false</autokdesu>
-      <globaldebugarguments></globaldebugarguments>
+      <globaldebugarguments/>
       <useglobalprogram>false</useglobalprogram>
       <globalcwd>/home/miha/kde-devel/bin/</globalcwd>
       <directoryradio>executable</directoryradio>
     </run>
     <build>
       <buildtool>make</buildtool>
-      <builddir></builddir>
+      <builddir>/home/miha/kde-devel/Opeke/build</builddir>
     </build>
     <make>
-      <abortonerror>false</abortonerror>
+      <abortonerror>true</abortonerror>
       <numberofjobs>1</numberofjobs>
       <prio>0</prio>
       <dontact>false</dontact>
       <makebin>make</makebin>
-      <defaulttarget></defaulttarget>
-      <makeoptions></makeoptions>
+      <defaulttarget/>
+      <makeoptions/>
       <selectedenvironment>default</selectedenvironment>
       <environments>
         <default/>
@@ -168,9 +168,9 @@
     </filetypes>
     <other>
       <prio>0</prio>
-      <otherbin></otherbin>
-      <defaulttarget></defaulttarget>
-      <otheroptions></otheroptions>
+      <otherbin/>
+      <defaulttarget/>
+      <otheroptions/>
       <selectedenvironment>default</selectedenvironment>
       <environments>
         <default/>
@@ -302,17 +302,17 @@
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet></prefixGet>
+      <prefixGet>get</prefixGet>
       <prefixSet>set</prefixSet>
-      <prefixVariable>m_,_,m</prefixVariable>
-      <parameterName>theValue</parameterName>
+      <prefixVariable>m_,_,m,m</prefixVariable>
+      <parameterName>value</parameterName>
       <inlineGet>false</inlineGet>
       <inlineSet>false</inlineSet>
     </creategettersetter>
     <splitheadersource>
-      <enabled>false</enabled>
+      <enabled>true</enabled>
       <synchronize>true</synchronize>
-      <orientation>Vertical</orientation>
+      <orientation>Horizontal</orientation>
     </splitheadersource>
   </kdevcppsupport>
   <kdevclassview>
@@ -321,7 +321,7 @@
   </kdevclassview>
   <kdevdocumentation>
     <projectdoc>
-      <docsystem>Doxygen Documentation Collection</docsystem>
+      <docsystem>Zbirka dokumentacije Doxygen</docsystem>
       <docurl>opeke.tag</docurl>
       <usermanualurl/>
     </projectdoc>

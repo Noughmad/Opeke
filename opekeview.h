@@ -24,13 +24,11 @@
 #include <QtGui/QWidget>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QKeyEvent>
-#include <QtOpenGL/qgl.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 #include <Ogre.h>
 
 #include "brick.h"
+#include "undoaction.h"
 #include "ui_opekeview_base.h"
 
 class QPainter;
@@ -66,6 +64,12 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		virtual void setupScene();
 		
 		Brick *newBrick();
+
+	void setBricks ( const QList< Brick * >& value );
+	
+
+	QList< Brick * > getBricks() const;
+	
 		
 	protected:
 
@@ -97,55 +101,27 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		Ogre::RaySceneQuery* mRaySceneQuery;
 		Ogre::Light* mLight;
 		
-		Ogre::SceneNode* currentNode;
-		Ogre::SceneNode* activeNode;
-		Ogre::Entity* activeEntity;
+	//	Ogre::SceneNode* currentNode;
+	//	Ogre::SceneNode* activeNode;
+	//	Ogre::Entity* activeEntity;
 		Ogre::Entity* mEntity;
 		Ogre::Plane mPlane;
 		Ogre::Material* mMaterial;
 		
-		
-		Ogre::SceneNode* workingNode();
-		
-		int i;
-		
-		
 	private:
 		
-		/**
-		 * We need a struct which will hold all out actions.
-		 * From this struct we shall know how to undo them
-		 */
-		
-		struct undoAction
-		{
-			int type;
-			Brick* uBrick;
-			Ogre::Vector3 move;
-			int uNum;
-			QColor color;
-		};
-		
-		/**
-		 * Enumeration list for action types
-		 */
-		
-		enum {build, del, move, color};
-		
-		QList<undoAction> uList;
-		QList<undoAction> rList;
+		QList<UndoAction*> undoList;
+		QList<UndoAction*> redoList;
 		Ogre::Vector3 uCenter, uMove, mSize;
+		Ogre::Vector3 preMovePos;
 		unsigned int nodeCount, materialCount;
 		Ogre::ColourValue mColor, mBgColor;
-		QString selectedBrick;
+		//QString selectedBrick;
 		
 		QList<Brick*> Bricks;
 		QList<Brick*> selectedBricks;
 
-		float xrot, yrot, zrot;
-		float zoom;
-		int xpos, ypos, xmove, ymove;
-		int sizeX, sizeY, sizeZ;
+		//int sizeX, sizeY, sizeZ;
 		int planeZ, maxHeight;
 		int mBrickType, type;
 
@@ -153,7 +129,7 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		int selected;
 
 		Ogre::Vector3 transform ( int x, int y );
-		Ogre::Vector3 moving;
+		Ogre::Vector3 moving, current;
 		bool mouseDown;
 		QString fileName;
 		QColor bgColor, gridColor;
@@ -168,12 +144,8 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 
 		bool checkCollision(Brick *toCheck);
 		Brick* setSelect ( int x, int y );
-		void processHits ( GLuint hits, GLuint buf[] );
 		Brick* newBrick(int newType);
 		void changeType(int changedType);
-
-		
-		Brick* working();
 
 	signals:
 		/**

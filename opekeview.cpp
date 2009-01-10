@@ -42,15 +42,13 @@ OpekeView::OpekeView ( QWidget * )
 	: fileName ( QString() )
 
 {	
-	selectedBrick = " ";
 	ui_opekeview_base.setupUi ( this );
 
 	setMouseTracking(true);
 	
 	mBrickType = Brick::Block;
 	activeBrick = 0;
-	currentBrick = 0;
-	activeNode = 0;
+//	currentBrick = 0;
 	
 	mRoot = 0;
 	mResourceGroupManager = 0;
@@ -66,13 +64,13 @@ OpekeView::OpekeView ( QWidget * )
 	mColor = Ogre::ColourValue(1.0, 0.0, 0.0, 1.0);
 	
 	Bricks.clear();
-	uList.clear();
-	rList.clear();
+	undoList.clear();
+	redoList.clear();
 	
 	mSize = (Ogre::Vector3(24, 16, 12));
 	
-	readConfig();
-	settingsChanged();
+/*	readConfig();
+	settingsChanged(); */
 }
 
 OpekeView::~OpekeView()
@@ -135,8 +133,8 @@ void OpekeView::setupOgre()
 
 void OpekeView::setupScene()
 {
-	mCamera->setPosition(Ogre::Vector3(0.0f,0.0f,500.0f));
-	mCamera->lookAt(Ogre::Vector3(0.0f,0.0f,0.0f));
+	mCamera->setPosition(Ogre::Vector3(0.0f,500.0f,-500.0f));
+	mCamera->lookAt(Ogre::Vector3(0.0f,-1.0f,1.0f));
 	mCamera->setNearClipDistance(5.0f);
 	mCamera->setFarClipDistance(5000.0f);
 	mViewport->setBackgroundColour(Ogre::ColourValue(0.0f,0.0f,0.0f));
@@ -210,31 +208,23 @@ void OpekeView::mousePressEvent ( QMouseEvent *event )
 	switch (event->buttons())	
 	{
 		case (Qt::RightButton):
-			xpos = event->x();
-			ypos = event->y();
+			moving = Ogre::Vector3(event->x(), -event->y(), 0);
 			break;
 		case (Qt::LeftButton):
 			if (!mode)
 			{
+				/**
+				 * Select
+				 */
+				
 				if (activeBrick) activeBrick->setSelected(false);
 				activeBrick = setSelect ( event->x(), event->y() );
 				moving = transform( event->x(), event->y() );
-				if (selected >= 0)
+				if (activeBrick)
 				{
-					if (activeBrick)
-					{
-						delete activeBrick;
-						activeBrick = 0;
-					}					
-					activeBrick = Bricks[selected];
+					preMovePos = activeBrick->position();
 				}
 			}
-			break;
-		case (Qt::XButton1):
-			zoom +=1.0;
-			break;
-		case (Qt::XButton2):
-			zoom -=1.0;
 			break;
 		default:
 			event->ignore();
@@ -249,21 +239,20 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 	if (!hasFocus()) setFocus();
 	if (event->buttons() == Qt::RightButton)
 	{
-		mCamera->moveRelative(Ogre::Vector3( (xpos - event->x())/2, (event->y() - ypos)/2, 0));
-		xpos = event->x();
-		ypos = event->y();
+		current = Ogre::Vector3(event->x(), event->y(), 0);
+		mCamera->moveRelative((current - moving)/2);
+		moving = current;
 	}
 	else if ( mode == 1)
 	{
-		Ogre::Vector3 mouse = transform ( event->x(), event->y() );
 		if (!activeBrick) activeBrick = newBrick();
-		activeBrick->setPosition(mouse);
+		activeBrick->setPosition(transform(event->x(), event->y()));
 	}
 	else if (activeBrick && event->buttons() == Qt::LeftButton)
 	{
 		mouseDown = 1;
-		Ogre::Vector3 current = transform(event->x(), event->y());
-		activeBrick->move(current.x - moving.x, current.y - moving.y, current.z - moving.z);
+		current = transform(event->x(), event->y());
+		activeBrick->move(current - moving);
 		moving = current;
 	}
 	update();
@@ -274,39 +263,30 @@ void OpekeView::mouseReleaseEvent(QMouseEvent *event)
 	if ( event->button() == Qt::LeftButton )
 	{
 		if ( mode == 1 )	//if we're in build mode, add the active Brick to the list
-		{
-			
-			
+		{			
 			if (activeBrick)
 			{
-				undoAction u;
-				u.type = 0;
-				u.uNum = Bricks.count();
-				
+				UndoAction *u = new UndoAction(activeBrick, UndoAction::Build);
 				Bricks.append(activeBrick);
 				activeBrick = newBrick();
+				activeBrick->setPosition(transform ( event->x(), event->y()));
 				
-				Ogre::Vector3 mouse = transform ( event->x(), event->y() );
-				activeBrick->setPosition(Ogre::Vector3(mouse));
-				
-				if (uList.isEmpty()) emit undoEmpty(false);
-				uList.append(u);
-				rList.clear();
+				if (undoList.isEmpty()) emit undoEmpty(false);
+				undoList.append(u);
+				redoList.clear();
 				emit redoEmpty(true);
 				emit modified();
 			}	
 		}
-		else if (currentBrick && selected >= 0 && mouseDown)
-		{
-			undoAction u;
-			u.type = 2;
-			u.move.x = Bricks[selected]->position().x - uCenter.x;
-			u.move.y = Bricks[selected]->position().y - uCenter.y;
-			u.move.z = Bricks[selected]->position().z - uCenter.z;
-			u.uNum = selected;
-			if (uList.isEmpty()) emit undoEmpty(false);
-			uList.append(u);
-			rList.clear();
+		else if (activeBrick) 
+		{ 
+			UndoAction *u = new UndoAction(activeBrick, UndoAction::Move);
+			u->setPrevPos(preMovePos);
+			u->setNowPos(activeBrick->position());
+			
+			if (undoList.isEmpty()) emit undoEmpty(false);
+			undoList.append(u);
+			redoList.clear();
 			emit redoEmpty(true);
 			emit modified();
 		}
@@ -321,6 +301,7 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 {
 	float mod = 10.0;
 	if (event->isAutoRepeat()) mod *= 2;
+	else preMovePos = activeBrick->position();
 	
 	if (event->modifiers() == Qt::ControlModifier)
 	{
@@ -328,7 +309,6 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 		{
 			case ( Qt::Key_Up ) :
 				mCamera->pitch(Ogre::Radian(-mod/400));
-				xrot += mod;
 				break;
 	
 			case ( Qt::Key_Down ) :
@@ -337,7 +317,6 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 	
 			case ( Qt::Key_Left ) :
 				mCamera->yaw(Ogre::Radian(-mod/400));
-
 				break;		
 	
 			case ( Qt::Key_Right ) :
@@ -396,19 +375,19 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 					break;
 	
 				case ( Qt::Key_2 ) :
-					zoom += mod/2;
+					mCamera->moveRelative(Ogre::Vector3(0, 0, -mod*2));
 					break;
 
 				case ( Qt::Key_8 ) :
-					zoom -= mod/2;
+					mCamera->moveRelative(Ogre::Vector3(0, 0, mod*1));
 					break;
 	
 				case ( Qt::Key_4 ) :
-					zrot += mod;
+					mCamera->roll(Ogre::Radian(-mod/400));
 					break;
 	
 				case ( Qt::Key_6 ) :
-					zrot -= mod;
+					mCamera->roll(Ogre::Radian(mod/400));
 					break;
 				default: 
 					event->ignore();
@@ -420,28 +399,29 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 			switch (event->key())
 			{
 				case (Qt::Key_Up):
-					currentNode->translate(0, 1.0, 0);
+					
+					activeBrick->move(0, 1.0, 0);
 					uMove.y = 1.0;
 					break;
 				case (Qt::Key_Down):
-					currentNode->translate(0, -1.0, 0);
+					activeBrick->move(0, -1.0, 0);
 					uMove.y = -1.0;
 					break;
 				case (Qt::Key_Left):
-					currentNode->translate(-1.0, 0, 0);
+					activeBrick->move(-1.0, 0, 0);
 					uMove.x = -1.0;
 					break;
 				case (Qt::Key_Right):
-					currentNode->translate(1.0, 0, 0);
+					activeBrick->move(1.0, 0, 0);
 					uMove.x = 1.0;
 					break;
 				case (Qt::Key_8):
-					currentNode->translate(0, 0, 1.0);
+					activeBrick->move(0, 0, 1.0);
 					uMove.z = 1.0;
 					emit planeChanged(planeZ + 1);
 					break;
 				case (Qt::Key_2):
-					currentNode->translate(0, 0, -1.0);
+					activeBrick->move(0, 0, -1.0);
 					uMove.z = -1.0;
 					emit planeChanged(planeZ - 1);
 					break;
@@ -449,8 +429,6 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 					event->ignore();
 					break;
 			}
-			uCenter = Bricks[selected]->position();
-			Bricks[selected] = currentBrick;
 		}	
 	}
 	update();
@@ -462,13 +440,12 @@ void OpekeView::keyReleaseEvent(QKeyEvent* event)
 	if (!mode && selected >= 0 && (key == Qt::Key_Up || key == Qt::Key_Down || key == Qt::Key_Left || key == Qt::Key_Right ||
 			key == Qt::Key_8 || key == Qt::Key_2))
 	{
-		undoAction u;
-		u.type = 2;
-		u.uNum = selected;
-		u.move = uMove;
-		if (uList.isEmpty()) emit undoEmpty(false);
-		uList.append(u);
-		rList.clear();
+		UndoAction *u = new UndoAction(activeBrick, UndoAction::Move);
+		u->setPrevPos(preMovePos);
+		u->setNowPos(activeBrick->position());
+		if (undoList.isEmpty()) emit undoEmpty(false);
+		undoList.append(u);
+		redoList.clear();
 		emit redoEmpty(true);
 		emit modified();
 	}
@@ -479,7 +456,7 @@ void OpekeView::wheelEvent(QWheelEvent *event)
 {
 	if (!mode && selected >= 0)
 	{
-		currentNode->translate(0,0, event->delta()/30);
+		activeBrick->move(0,0, event->delta()/30);
 		emit planeChanged (planeZ + event->delta()/30);
 		emit modified();
 		emit redoEmpty(true);
@@ -494,7 +471,8 @@ void OpekeView::wheelEvent(QWheelEvent *event)
 Brick* OpekeView::newBrick()
 {
 	nodeCount++;
-	activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode("Node" + Ogre::StringConverter::toString(nodeCount));
+	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode("Node" + Ogre::StringConverter::toString(nodeCount));
+	Ogre::Entity* activeEntity = 0;
 	
 	switch (mBrickType)
 	{
@@ -588,14 +566,12 @@ Brick* OpekeView::setSelect ( int x, int y )
 
 void OpekeView::newScene()
 {
-	setBuildMode();
+	foreach (Brick *b, Bricks) delete b;
 	Bricks.clear();
-	xrot = -45.0;
-	yrot = 0;
-	zrot = 0;
-	zoom = 5;
-	uList.clear();
-	rList.clear();
+	mSceneManager->clearScene();
+	setBuildMode();
+	undoList.clear();
+	redoList.clear();
 	update();
 	emit undoEmpty(true);
 	emit redoEmpty(true);
@@ -622,10 +598,10 @@ void OpekeView::setSelectMode()
 
 void OpekeView::settingsChanged()
 {
-	maxHeight = Settings::val_mahx();
+	maxHeight = Settings::val_maxh();
 	bgColor = Settings::col_background();
 	
-	glClearColor(bgColor.redF(), bgColor.greenF(), bgColor.blueF(), 0.0);
+	mViewport->setBackgroundColour(Brick::toOgreColour(bgColor));
 
 	update();
 	emit signalChangeStatusbar ( i18n("Settings changed") );
@@ -633,18 +609,22 @@ void OpekeView::settingsChanged()
 
 void OpekeView::setColor ( QColor signaled_color )
 {
-	if (activeBrick) activeBrick->setColor(signaled_color);
+	if (!activeBrick) activeBrick = Bricks[selected];
 	if (!mode && selected >= 0)
 	{
-		undoAction u;
-		u.type = 3;
-		u.uNum = selected;
-		u.color = Bricks[selected]->color();
-		Bricks[selected]->setColor(signaled_color);
-		if (uList.isEmpty()) emit undoEmpty(false);
-		uList.append(u);
+		if (undoList.isEmpty()) emit undoEmpty(false);
+		UndoAction *u = new UndoAction(activeBrick, UndoAction::Color);
+		undoList.append(u);
+		redoList.clear();
+		emit redoEmpty(true);
+
+		u->setPrevColor(activeBrick->getOgreColor());
+		u->setNowColor(Brick::toOgreColour(signaled_color));
+		activeBrick->setColor(signaled_color);
+		if (undoList.isEmpty()) emit undoEmpty(false);
+		undoList.append(u);
 	}
-	mColor = Ogre::ColourValue(signaled_color.redF(), signaled_color.greenF(), signaled_color.blueF(), signaled_color.alphaF());
+	mColor = Brick::toOgreColour(signaled_color);
 	update();
 }
 
@@ -680,22 +660,13 @@ void OpekeView::delBrick()
 {
 	if (mode == 0 && activeBrick)
 	{
-		delete activeBrick;
+		activeBrick->hide();
+		
+		UndoAction *u = new UndoAction(activeBrick, UndoAction::Delete);
+		undoList.append(u);
+		
 		activeBrick = 0;
-		/*
-		undoAction u;
-		u.type = 1;
-		u.uBrick = Bricks[selected];
-		u.uNum = selected;
 		
-		currentNode->detachAllObjects();
-		Bricks.removeAt(selected);
-		
-		if (uList.isEmpty()) emit undoEmpty(false);
-		uList.append(u);
-		rList.clear();
-		emit redoEmpty(true);
-		*/
 		emit modified();
 	}
 	if (selected >= Bricks.count())
@@ -708,117 +679,44 @@ void OpekeView::delBrick()
 
 void OpekeView::undo()
 {
-	if (uList.isEmpty())
+	if (undoList.isEmpty())
 	{
 		emit undoEmpty(true);
+		kDebug() << "Empty";
 		return;
 	}
-	if (rList.isEmpty()) emit redoEmpty(false);
-	undoAction u = uList.last();
-	QColor temp;
-	switch (u.type)
-	{
-		case (0):
-			u.type = 1;
-			u.uBrick = Bricks[u.uNum];
-			Bricks.removeAt(u.uNum);
-			rList.append(u);
-			break;
-		case (1):
-			if (u.uNum > Bricks.count())
-			{
-				u.uNum = Bricks.count();
-			}
-			Bricks.insert(u.uNum, u.uBrick);
-			u.type = 0;
-			rList.append(u);			
-			break;
-		case (2):
-			u.move.x = -u.move.x;
-			u.move.y = -u.move.y;
-			u.move.z = -u.move.z;
-			currentNode = mSceneManager->getSceneNode("Node" + u.uNum);
-			currentNode->translate(u.move.x, u.move.y, u.move.z);
-			rList.append(u);
-			break;
-		case (3):
-			temp = Bricks[u.uNum]->color();
-			Bricks[u.uNum]->setColor(u.color);
-			u.color = temp;
-			rList.append(u);
-		default:
-			break;
-	}
-	uList.removeLast();
-	if (uList.isEmpty()) emit undoEmpty(true);
+	if (redoList.isEmpty()) emit redoEmpty(false);
+	kDebug() << "Full";
+	undoList.last()->undo();
+	redoList.append(undoList.takeLast());
+	
+	if (undoList.isEmpty()) emit undoEmpty(true);
 	emit modified();
 	update();
 }
 
 void OpekeView::redo()
 {
-	if (rList.isEmpty()) 
+	if (redoList.isEmpty()) 
 	{
 		emit redoEmpty(true);
 		return;
 	}
-	if (uList.isEmpty()) emit undoEmpty(false);
-	undoAction u = rList.last();
-	QColor temp;
-	switch (u.type)
-	{
-		case (0):
-			u.type = 1;
-			u.uBrick = Bricks[u.uNum];
-			Bricks.removeAt(u.uNum);
-			if (uList.isEmpty()) emit undoEmpty(false);
-			uList.append(u);
-			break;
-		case (1):
-			if (u.uNum > Bricks.count())
-			{
-				u.uNum = Bricks.count();
-			}
-			Bricks.insert(u.uNum, u.uBrick);
-			u.type = 0;
-			if (uList.isEmpty()) emit undoEmpty(false);
-			uList.append(u);		
-			break;
-		case (2):
-			u.move.x = -u.move.x;
-			u.move.y = -u.move.y;
-			u.move.z = -u.move.z;
-			
-			currentNode = mSceneManager->getSceneNode("Node" + u.uNum);
-			currentNode->translate(u.move.x, u.move.y, u.move.z);
-			if (uList.isEmpty()) emit undoEmpty(false);
-			uList.append(u);
-			break;
-		case (3):
-			temp = Bricks[u.uNum]->color();
-			Bricks[u.uNum]->setColor(u.color);
-			u.color = temp;
-			uList.append(u);
-		default:
-			break;
-	}
-	rList.removeLast();
-	if (rList.isEmpty()) emit redoEmpty(true);
+	if (undoList.isEmpty()) emit undoEmpty(false);
+	
+	redoList.last()->redo();
+	undoList.append(redoList.takeLast());
+	
+	if (redoList.isEmpty()) emit redoEmpty(true);
 	emit modified();
 	update();
 }
 
-Ogre::SceneNode* OpekeView::workingNode()
-{
-	if (mode) return activeNode;
-	else if (selected >= 0) return mSceneManager->getSceneNode("Node" + selected);
-	else return 0;
-}
-
 void OpekeView::changeType(int changedType)
 {
+	kDebug("OMG");
 	mBrickType = changedType;
-	if (activeBrick)
+	if (mode == 1 && activeBrick)
 	{
 		delete activeBrick;
 		activeBrick = newBrick();
@@ -852,28 +750,27 @@ void OpekeView::changeTypeSphere()
 
 void OpekeView::changeOrientation(int changedOrientation)
 {
-	if(workingNode()) workingNode()->setOrientation(changedOrientation);
+	if(activeBrick) activeBrick->setOrientation(changedOrientation);
 }
 
 void OpekeView::rotateX()
 {
-	if(workingNode()) workingNode()->pitch(Ogre::Radian(3/2));
+	if(activeBrick) activeBrick->node()->pitch(Ogre::Radian(3/2));
 }
 
 void OpekeView::rotateY()
 {
-	if(workingNode()) workingNode()->yaw(Ogre::Radian(3/2));
+	if(activeBrick) activeBrick->node()->yaw(Ogre::Radian(3/2));
 }
 
 void OpekeView::rotateZ()
 {
-	if(workingNode()) workingNode()->roll(Ogre::Radian(3/2));
+	if(activeBrick) activeBrick->node()->roll(Ogre::Radian(3/2));
 }
 
 void OpekeView::sendOrientation()
 {
-	Ogre::SceneNode *w = workingNode();
-	if (w) emit signalOrientation(w->getOrientation());
+	if (activeBrick) emit signalOrientation(activeBrick->orientation());
 }
 
 void OpekeView::openBricks(QList<Brick*> inBricks)
@@ -890,6 +787,17 @@ void OpekeView::openBricks(QList<Brick*> inBricks)
 		// kDebug() << b->size[1]; 
 		Bricks.append(b);
 	}
+}
+
+QList< Brick * > OpekeView::getBricks() const
+{
+	return Bricks;
+}
+
+
+void OpekeView::setBricks ( const QList< Brick * >& value )
+{
+	Bricks = value;
 }
 
 #include "opekeview.moc"
