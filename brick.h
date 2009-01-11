@@ -90,7 +90,7 @@ class Brick
 		int mType;
 		int mOrientation;
 		Ogre::Vector3 mSize;
-		QColor mColor;
+		Ogre::ColourValue mColor;
 		bool mSelected;
 };
 

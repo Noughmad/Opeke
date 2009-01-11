@@ -167,7 +167,7 @@ void Opeke::setupActions()
 	connect ( this, SIGNAL ( reload() ), m_view, SLOT ( update() ) );
 	connect ( this, SIGNAL ( clear() ), m_view, SLOT ( newScene() ) );
 
-	connect ( m_tool->ui_opeketool_base.color, SIGNAL ( highlighted ( QColor ) ), m_view, SLOT ( setColor ( QColor ) ) );
+	connect ( m_tool->ui_opeketool_base.color, SIGNAL ( highlighted ( QColor ) ), m_view, SLOT ( viewColor ( QColor ) ) );
 	connect ( m_tool->ui_opeketool_base.color, SIGNAL ( activated ( QColor ) ), m_view, SLOT ( setColor ( QColor ) ) );
 
 	connect ( m_tool->ui_opeketool_base.planeZ, SIGNAL ( valueChanged ( int ) ), m_view, SLOT ( setPlaneZ ( int ) ) );
@@ -205,40 +205,18 @@ void Opeke::fileNew()
 
 void Opeke::saveFileAs ( const QString &outputFileName )
 {
-	/**
-	 * TODO: Rewrite this function to implement Entities and Nodes
-	 * Rewrite only the actual loading of Bricks, the stucture is OK
-	 */
-	
-	/*
-	KSaveFile file ( outputFileName );
-	file.open();
-	QDataStream output ( &file );
+	KSaveFile *file  = new KSaveFile(outputFileName);
+	file->open();
+	QDataStream output ( file );
 	QString program = "Opeke", fileVersion = VERSION;
-	output<<program<<fileVersion;
-	QList<Brick*> outBricks = m_view->Bricks;
-	int count = outBricks.count();
-	int curType;
-	for ( int j = 0; j < count; j++ )
-	{
-		curType = outBricks[j]->type;
-		output<<curType;
-		if (!outBricks[j]->midpointDefined) outBricks[j]->setMidpoint();
-		output<<outBricks[j]->midpoint().x;
-		output<<outBricks[j]->midpoint().y;
-		output<<outBricks[j]->midpoint().z;
-		output<<outBricks[j]->size[0];
-		output<<outBricks[j]->size[1];
-		output<<outBricks[j]->size[2];
-		output<<outBricks[j]->orientation;
-		output<<outBricks[j]->color;
-	}
-	file.finalize();
-	file.close();
+	output << program << fileVersion;
+	m_view->saveBricks(file);
+	
+	file->finalize();
+	file->close();
 	fileName = outputFileName;
 	setWindowTitle(fileName + " Opeke [*]");
 	setWindowModified(false);
-	*/
 }
 
 void Opeke::saveFileAs()
@@ -271,129 +249,21 @@ void Opeke::openFile(const QString &inputFileName)
 	 * Rewrite only the actual loading of Bricks, the stucture is OK
 	 */
 	
-	/* OLD
-	
 	QString tmpFile;
 	if ( KIO::NetAccess::download (inputFileName, tmpFile, this ) )
 	{
 		fileName = inputFileName;
-		QFile file ( tmpFile );
-		file.open ( QIODevice::ReadOnly );
-		QList<Brick*> inBricks;
-		QDataStream in ( &file );
-		QString fileVersion, program;
-		in>>program>>fileVersion;
-		if (program != "Opeke")
-		{
-			KMessageBox::error ( this, i18n ("The file you're trying to open is not a recongniseable Opeke file."));
-			return;
-		} 
-		// kDebug() << "Loading a Opeke file";
-		// kDebug() << "the version is " << fileVersion;
-
-		if (fileVersion == "0.1")
-		{
-			while ( !in.atEnd() )
-			{
-				block* br = new block;
-				for ( int m = 0; m < 8; m++ )
-				{
-					in>>br->bv[m].x;
-					in>>br->bv[m].y;
-					in>>br->bv[m].z;
-				}
-				in>>br->color;
-				br->size[0] = br->bv[2].x - br->bv[4].x;
-				br->size[1] = br->bv[2].y - br->bv[4].y;
-				br->size[2] = br->bv[2].z - br->bv[4].z;
-				inBricks.append(br);
-				delete br;
-			}
-		}
-		else if (fileVersion == "0.2")
-		{
-			while ( !in.atEnd() )
-			{
-				block* br = new block;
-				in>>br->type;
-				in>>br->size[0];
-				in>>br->size[1];
-				in>>br->size[2];
-				for ( int m = 0; m < 8; m++ )
-				{
-					in>>br->bv[m].x;
-					in>>br->bv[m].y;
-					in>>br->bv[m].z;
-				}
-				in>>br->color;
-				inBricks.append(br);
-			}	
-		}
-		else if (fileVersion == "0.3")
-		{
-			//emit clear();
-			while ( !in.atEnd() )
-			{
-				// kDebug() << "Loading a Opeke 0.3 file";
-				
-				int BrickType;
-				float x, y, z;
-				in>>BrickType;
-				Brick *br;
-				switch (BrickType)
-				{
-					case Brick::block:
-						br = new block;
-						// kDebug() << "Loaded a block";
-						break;
-					case Brick::roof:
-						br = new roof;
-						// kDebug() << "Loaded a roof";
-						break;
-					case Brick::cylinder:
-						br = new cylinder;
-						// kDebug() << "Loaded a cylinder";
-						break;
-					case Brick::invCyl:
-						br = new invcyl;
-						// kDebug() << "Loaded a invCyl";
-						break;
-					case Brick::sphere:
-						br = new sphere;
-						// kDebug() << "Loaded a sphere";
-						break;
-					default: 
-						br = 0;
-						KMessageBox::error ( this, i18n ("Corrupted file"));
-						return;
-						break;
-				}
-				in>>x>>y>>z;
-				// kDebug() << x;
-				in>>br->size[0];
-				in>>br->size[1];
-				in>>br->size[2];
-				in>>br->orientation;
-				in>>br->color;
-				br->center(x, y, z);
-				inBricks.append(br);
-			}
-		}
-		else	
-		{
-			KMessageBox::error ( this, i18n ("This file was made by an unknown Opeke version."));
-			return;
-		}		
-		file.close();
+		QFile* file  = new QFile (tmpFile);
+		file->open ( QIODevice::ReadOnly );
+		m_view->openBricks(file);
+		file->close();
 		setWindowTitle(fileName + " - Opeke [*]");
 		setWindowModified(false);
-		emit BricksLoaded(inBricks);
 	}
 	else
 	{
 		KMessageBox::error ( this, KIO::NetAccess::lastErrorString() );
 	}
-	*/
 }
 
 

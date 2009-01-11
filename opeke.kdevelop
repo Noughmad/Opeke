@@ -35,7 +35,7 @@
     <tree>
       <hidenonprojectfiles>false</hidenonprojectfiles>
       <hidepatterns>*.o,*.lo,CVS</hidepatterns>
-      <showvcsfields>false</showvcsfields>
+      <showvcsfields>true</showvcsfields>
     </tree>
   </kdevfileview>
   <kdevdoctreeview>
@@ -261,6 +261,8 @@
       <path>placeholder.cpp</path>
       <path>placeholder.h</path>
       <path>opekeview_base_backup.ui</path>
+      <path>opeke.kcfg~</path>
+      <path>settings.kcfgc~</path>
     </blacklist>
     <general>
       <activedir/>

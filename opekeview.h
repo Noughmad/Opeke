@@ -24,6 +24,7 @@
 #include <QtGui/QWidget>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QKeyEvent>
+#include <KSaveFile>
 
 #include <Ogre.h>
 
@@ -58,39 +59,34 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		 */
 		virtual ~OpekeView();
 
-		
+
 		void update();
 		virtual void setupOgre();
 		virtual void setupScene();
-		
-		Brick *newBrick();
 
-	void setBricks ( const QList< Brick * >& value );
-	
+		void openBricks ( QFile* file );
+		void saveBricks ( KSaveFile* file );
 
-	QList< Brick * > getBricks() const;
-	
-		
+
+
 	protected:
 
-		void paintEvent( QPaintEvent * );
-		void resizeEvent( QResizeEvent* );
-		
-	//	virtual void setupResources();
-		
+		void paintEvent ( QPaintEvent * );
+		void resizeEvent ( QResizeEvent* );
+
 		void readConfig();
 		void saveSettings();
 
 		void mousePressEvent ( QMouseEvent *event );
 		void mouseMoveEvent ( QMouseEvent *event );
-		void mouseReleaseEvent(QMouseEvent *event);
+		void mouseReleaseEvent ( QMouseEvent *event );
 		void keyPressEvent ( QKeyEvent *event );
 		void keyReleaseEvent ( QKeyEvent *event );
-		void wheelEvent (QWheelEvent *event);
-		
-		void showGrid(Brick* toShow);
-		void showNoGrid(Brick* toShow);
-		
+		void wheelEvent ( QWheelEvent *event );
+
+		void showGrid ( Brick* toShow );
+		void showNoGrid ( Brick* toShow );
+
 		Ogre::Root* mRoot;
 		Ogre::ResourceGroupManager* mResourceGroupManager;
 		Ogre::SceneManager* mSceneManager;
@@ -100,28 +96,24 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		Ogre::Viewport* mViewport;
 		Ogre::RaySceneQuery* mRaySceneQuery;
 		Ogre::Light* mLight;
-		
-	//	Ogre::SceneNode* currentNode;
-	//	Ogre::SceneNode* activeNode;
-	//	Ogre::Entity* activeEntity;
+
 		Ogre::Entity* mEntity;
 		Ogre::Plane mPlane;
 		Ogre::Material* mMaterial;
-		
+
 	private:
-		
+
 		QList<UndoAction*> undoList;
 		QList<UndoAction*> redoList;
 		Ogre::Vector3 uCenter, uMove, mSize;
 		Ogre::Vector3 preMovePos;
+		Ogre::ColourValue preChangeColor;
 		unsigned int nodeCount, materialCount;
 		Ogre::ColourValue mColor, mBgColor;
-		//QString selectedBrick;
-		
+
 		QList<Brick*> Bricks;
 		QList<Brick*> selectedBricks;
 
-		//int sizeX, sizeY, sizeZ;
 		int planeZ, maxHeight;
 		int mBrickType, type;
 
@@ -132,7 +124,7 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		Ogre::Vector3 moving, current;
 		bool mouseDown;
 		QString fileName;
-		QColor bgColor, gridColor;
+		QColor bgColor;
 		Ui::opekeview_base ui_opekeview_base;
 
 		bool mode;
@@ -142,30 +134,32 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		 */
 		int orientation;
 
-		bool checkCollision(Brick *toCheck);
+		bool checkCollision ( Brick *toCheck );
 		Brick* setSelect ( int x, int y );
-		Brick* newBrick(int newType);
-		void changeType(int changedType);
+		Brick* newBrick ( int newType );
+		Brick *newBrick();
+		void changeType ( int changedType );
 
 	signals:
 		/**
 		 * Use this signal to change the content of the statusbar
 		 */
 		void signalChangeStatusbar ( const QString& text );
-		void undoEmpty(bool empty);
-		void redoEmpty(bool empty);
-		void delEnable(bool enable);
-		void planeChanged(int z);
+		void undoEmpty ( bool empty );
+		void redoEmpty ( bool empty );
+		void delEnable ( bool enable );
+		void planeChanged ( int z );
 		void modified();
 		void getOrientationFromTool();
-		void signalOrientation(Ogre::Quaternion signaledOrientation);
-		
+		void signalOrientation ( Ogre::Quaternion signaledOrientation );
+
 	private slots:
 		void newScene();
 		void settingsChanged();
 		void setBuildMode();
 		void setSelectMode();
 
+		void viewColor ( QColor );
 		void setColor ( QColor );
 		void setSizeX ( int );
 		void setSizeY ( int );
@@ -173,22 +167,20 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 
 		void setPlaneZ ( int );
 		void delBrick();
-		
+
 		void undo();
 		void redo();
-		
+
 		void changeTypeBlock();
 		void changeTypeRoof();
 		void changeTypeCylinder();
 		void changeTypeInvCyl();
 		void changeTypeSphere();
-		void changeOrientation(int changedOrientation);
+		void changeOrientation ( int changedOrientation );
 		void rotateX();
 		void rotateY();
 		void rotateZ();
 		void sendOrientation();
-
-		void openBricks(QList<Brick*> inBricks);
 };
 
 #endif // OpekeVIEW_H

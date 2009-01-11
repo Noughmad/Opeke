@@ -30,6 +30,7 @@ Brick::Brick ( Ogre::SceneNode* node, Ogre::Entity* entity )
 	mNode = node;
 	mEntity = entity;
 	mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
+	mColor = mMaterial->getTechnique(0)->getPass(0)->getAmbient();
 	mOrientation = 0;
 	mSelected = false;
 }
@@ -78,7 +79,7 @@ void Brick::setColor ( QColor c )
 
 void Brick::setColor ( Ogre::ColourValue c )
 {
-	mColor = toQColor ( c );
+	mColor =  c;
 	if ( !mMaterial ) mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
 	mMaterial->setAmbient ( c );
 	mMaterial->setDiffuse ( c*0.5 );
@@ -86,12 +87,12 @@ void Brick::setColor ( Ogre::ColourValue c )
 
 QColor Brick::color()
 {
-	return mColor;
+	return toQColor(mColor);
 }
 
 Ogre::ColourValue Brick::getOgreColor()
 {
-	return toOgreColour ( mColor );
+	return mColor;
 }
 
 void Brick::setSizeX ( int x )
@@ -202,7 +203,7 @@ void Brick::setSelected ( bool s )
 
 Ogre::ColourValue Brick::toOgreColour ( QColor c )
 {
-	return Ogre::ColourValue ( c.redF(), c.greenF(), c.blueF(), c.alphaF() );
+	return Ogre::ColourValue ( (float)c.redF(), (float)c.greenF(), (float)c.blueF(), (float)c.alphaF() );
 }
 
 QColor Brick::toQColor ( Ogre::ColourValue c )
