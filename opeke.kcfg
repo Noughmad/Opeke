@@ -9,21 +9,9 @@
 	    <label>Color of the background</label>
 	    <default>black</default>
     </entry>
-    <entry name="col_grid" type="Color">
-	    <label>Color of the grid lines</label>
-	    <default>black</default>
-    </entry>
-    <entry name="val_mahx" type="Int">
+    <entry name="val_maxh" type="Int">
 	    <label>Maximum height of a building</label>
 	    <default>30</default>
-    </entry>
-    <entry name="grid_back" type="Bool">
-    	<label>Whither the grid is the same color as background</label>
-    	<default>true</default>
-    </entry>
-    <entry name="grid" type="Bool">
-    	<label>Whether the grid is displayed or not</label>
-    	<default>false</default>
     </entry>
   </group>
   <group name="MainWindow">

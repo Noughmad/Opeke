@@ -26,7 +26,7 @@
 
 #include "brick.h"
 #include "opekeview.h"
-
+#include "opeketool.h"
 #include "ui_prefs_base.h"
 
 class OpekeView;
