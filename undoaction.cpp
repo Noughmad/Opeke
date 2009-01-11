@@ -120,7 +120,6 @@ void UndoAction::setNowSize ( const Ogre::Vector3& value )
 
 void UndoAction::redo()
 {
-	kDebug() << "redo" << mType;
 	switch (mType)
 	{
 		case Build:
@@ -146,7 +145,6 @@ void UndoAction::redo()
 
 void UndoAction::undo()
 {
-	kDebug() << "Undo: " << mType;
 	switch (mType)
 	{
 		case Build:
