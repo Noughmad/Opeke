@@ -32,6 +32,7 @@ Brick::Brick ( Ogre::SceneNode* node, Ogre::Entity* entity )
 	mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
 	mColor = mMaterial->getTechnique(0)->getPass(0)->getAmbient();
 	mOrientation = 0;
+	mHidden = false;
 	mSelected = false;
 }
 
@@ -127,9 +128,9 @@ Ogre::Vector3 Brick::size()
 void Brick::setPosition ( Ogre::Vector3 pos )
 {
 	Ogre::Vector3 p;
-	p.x = (int)pos.x;
-	p.y = (int)pos.y;
-	p.z = (int)pos.z;
+	p.x = 4*(int)(pos.x/4);
+	p.y = 4*(int)(pos.y/4);
+	p.z = 4*(int)(pos.z/4);
 	mNode->setPosition ( p );
 }
 
@@ -214,9 +215,17 @@ QColor Brick::toQColor ( Ogre::ColourValue c )
 void Brick::show()
 {
 	mNode->attachObject(mEntity);
+	mHidden = false;
 }
 
 void Brick::hide()
 {
 	mNode->detachObject(mEntity);
+	mHidden = true;
+}
+
+
+bool Brick::isHidden() const
+{
+	return mHidden;
 }

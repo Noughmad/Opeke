@@ -80,6 +80,9 @@ class Brick
 		
 		void hide();
 		void show();
+
+	bool isHidden() const;
+	
 	
 	
 	protected:
@@ -92,6 +95,7 @@ class Brick
 		Ogre::Vector3 mSize;
 		Ogre::ColourValue mColor;
 		bool mSelected;
+		bool mHidden;
 };
 
 #endif

@@ -5,12 +5,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>595</height>
+    <width>535</width>
+    <height>681</height>
    </rect>
   </property>
   <property name="windowTitle" >
-   <string/>
+   <string>Tool Options</string>
   </property>
   <property name="toolTip" >
    <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
@@ -27,30 +27,20 @@ p, li { white-space: pre-wrap; }
   <property name="styleSheet" >
    <string notr="true" />
   </property>
-  <widget class="QWidget" name="verticalLayout" >
+  <widget class="QWidget" name="" >
    <property name="geometry" >
     <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>151</width>
-     <height>441</height>
+     <x>60</x>
+     <y>90</y>
+     <width>110</width>
+     <height>91</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" >
+   <layout class="QVBoxLayout" name="SizeLayout" >
     <item>
      <widget class="KIntNumInput" name="sizeX" >
       <property name="value" >
        <number>24</number>
-      </property>
-      <property name="minimum" >
-       <number>0</number>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="KIntNumInput" name="sizeY" >
-      <property name="value" >
-       <number>16</number>
       </property>
       <property name="minimum" >
        <number>0</number>
@@ -71,7 +61,299 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
     <item>
+     <widget class="KIntNumInput" name="sizeY" >
+      <property name="value" >
+       <number>16</number>
+      </property>
+      <property name="minimum" >
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>170</x>
+     <y>100</y>
+     <width>110</width>
+     <height>58</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="ColorLayout" >
+    <item>
      <widget class="KColorCombo" name="color" >
+      <item>
+       <property name="text" >
+        <string>Custom...</string>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string>Custom...</string>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string>Custom...</string>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
+      <item>
+       <property name="text" >
+        <string/>
+       </property>
+      </item>
       <item>
        <property name="text" >
         <string>Custom...</string>
@@ -977,6 +1259,18 @@ p, li { white-space: pre-wrap; }
     <item>
      <widget class="KIntNumInput" name="planeZ" />
     </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>300</x>
+     <y>100</y>
+     <width>101</width>
+     <height>143</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="RotateLayout" >
     <item>
      <widget class="KPushButton" name="b_rotateX" >
       <property name="text" >

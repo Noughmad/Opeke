@@ -15,7 +15,7 @@
     <projectname>Opeke</projectname>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <ignoreparts/>
     <defaultencoding>utf8</defaultencoding>
     <versioncontrol>kdevsubversion</versioncontrol>
@@ -35,7 +35,7 @@
     <tree>
       <hidenonprojectfiles>false</hidenonprojectfiles>
       <hidepatterns>*.o,*.lo,CVS</hidepatterns>
-      <showvcsfields>true</showvcsfields>
+      <showvcsfields>false</showvcsfields>
     </tree>
   </kdevfileview>
   <kdevdoctreeview>
@@ -76,16 +76,16 @@
   </kdevdoctreeview>
   <kdevdebugger>
     <general>
-      <dbgshell>libtool</dbgshell>
+      <dbgshell></dbgshell>
       <programargs/>
-      <gdbpath/>
+      <gdbpath>/usr/bin/valgrind</gdbpath>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
       <runappinappdirectory>true</runappinappdirectory>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <raiseGDBOnStart>false</raiseGDBOnStart>
     </general>
     <display>
@@ -126,13 +126,13 @@
   <kdevcustomproject>
     <run>
       <mainprogram>/home/miha/kde-devel/bin/opeke</mainprogram>
-      <programargs/>
+      <programargs></programargs>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars/>
       <autoinstall>false</autoinstall>
       <autokdesu>false</autokdesu>
-      <globaldebugarguments/>
+      <globaldebugarguments></globaldebugarguments>
       <useglobalprogram>false</useglobalprogram>
       <globalcwd>/home/miha/kde-devel/bin/</globalcwd>
       <directoryradio>executable</directoryradio>
@@ -142,13 +142,13 @@
       <builddir>/home/miha/kde-devel/Opeke/build</builddir>
     </build>
     <make>
-      <abortonerror>true</abortonerror>
+      <abortonerror>false</abortonerror>
       <numberofjobs>1</numberofjobs>
       <prio>0</prio>
       <dontact>false</dontact>
       <makebin>make</makebin>
-      <defaulttarget/>
-      <makeoptions/>
+      <defaulttarget></defaulttarget>
+      <makeoptions></makeoptions>
       <selectedenvironment>default</selectedenvironment>
       <environments>
         <default/>
@@ -168,9 +168,9 @@
     </filetypes>
     <other>
       <prio>0</prio>
-      <otherbin/>
-      <defaulttarget/>
-      <otheroptions/>
+      <otherbin></otherbin>
+      <defaulttarget></defaulttarget>
+      <otheroptions></otheroptions>
       <selectedenvironment>default</selectedenvironment>
       <environments>
         <default/>
@@ -261,8 +261,6 @@
       <path>placeholder.cpp</path>
       <path>placeholder.h</path>
       <path>opekeview_base_backup.ui</path>
-      <path>opeke.kcfg~</path>
-      <path>settings.kcfgc~</path>
     </blacklist>
     <general>
       <activedir/>
@@ -279,7 +277,12 @@
       <qmake>/usr/bin/qmake</qmake>
       <designerpluginpaths/>
     </qt>
-    <references/>
+    <references>
+      <pcs>Qt4</pcs>
+      <pcs>KDElibs</pcs>
+      <pcs>automatic_%2Fhome%2Fmiha%2Fkde-devel%2FOpeke</pcs>
+      <pcs>Ogre</pcs>
+    </references>
     <codecompletion>
       <automaticCodeCompletion>true</automaticCodeCompletion>
       <automaticArgumentsHint>true</automaticArgumentsHint>
@@ -293,20 +296,20 @@
       <showCommentWithArgumentHint>true</showCommentWithArgumentHint>
       <statusBarTypeEvaluation>false</statusBarTypeEvaluation>
       <namespaceAliases>std=_GLIBCXX_STD;__gnu_cxx=std</namespaceAliases>
-      <processPrimaryTypes>true</processPrimaryTypes>
-      <processFunctionArguments>true</processFunctionArguments>
-      <preProcessAllHeaders>false</preProcessAllHeaders>
-      <parseMissingHeadersExperimental>false</parseMissingHeadersExperimental>
+      <processPrimaryTypes>false</processPrimaryTypes>
+      <processFunctionArguments>false</processFunctionArguments>
+      <preProcessAllHeaders>true</preProcessAllHeaders>
+      <parseMissingHeadersExperimental>true</parseMissingHeadersExperimental>
       <resolveIncludePathsUsingMakeExperimental>false</resolveIncludePathsUsingMakeExperimental>
       <alwaysParseInBackground>true</alwaysParseInBackground>
       <usePermanentCaching>true</usePermanentCaching>
-      <alwaysIncludeNamespaces>true</alwaysIncludeNamespaces>
+      <alwaysIncludeNamespaces>false</alwaysIncludeNamespaces>
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
       <prefixGet>get</prefixGet>
       <prefixSet>set</prefixSet>
-      <prefixVariable>m_,_,m,m</prefixVariable>
+      <prefixVariable>m_,_,m</prefixVariable>
       <parameterName>value</parameterName>
       <inlineGet>false</inlineGet>
       <inlineSet>false</inlineSet>
@@ -325,7 +328,7 @@
     <projectdoc>
       <docsystem>Zbirka dokumentacije Doxygen</docsystem>
       <docurl>opeke.tag</docurl>
-      <usermanualurl/>
+      <usermanualurl></usermanualurl>
     </projectdoc>
   </kdevdocumentation>
   <substmap>
@@ -366,7 +369,7 @@
     <url>ftp://opeke.noughmad.org</url>
   </dist>
   <ctagspart>
-    <customArguments/>
+    <customArguments></customArguments>
     <customTagfilePath>/home/miha/kde-devel/Opeke/tags</customTagfilePath>
     <activeTagsFiles/>
   </ctagspart>

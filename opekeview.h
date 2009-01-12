@@ -26,14 +26,27 @@
 #include <QtGui/QKeyEvent>
 #include <KSaveFile>
 
-#include <Ogre.h>
-
 #include "brick.h"
 #include "undoaction.h"
 #include "ui_opekeview_base.h"
 
 class QPainter;
 class KUrl;
+namespace Ogre
+{
+	class  Root;
+	class  ResourceGroupManager;
+	class  SceneManager;
+	class  MaterialManager;
+	class  RenderWindow;
+	class  Camera;
+	class  Viewport;
+	class  Light;
+	class  Material;
+	class  Vector3;
+	class  ColourValue;
+}
+
 
 /**
  * This is the main view class for Opeke.  Most of the non-menu,
@@ -94,11 +107,7 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		Ogre::RenderWindow* mWindow;
 		Ogre::Camera* mCamera;
 		Ogre::Viewport* mViewport;
-		Ogre::RaySceneQuery* mRaySceneQuery;
 		Ogre::Light* mLight;
-
-		Ogre::Entity* mEntity;
-		Ogre::Plane mPlane;
 		Ogre::Material* mMaterial;
 
 	private:

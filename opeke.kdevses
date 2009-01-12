@@ -1,40 +1,31 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <!DOCTYPE KDevPrjSession>
 <KDevPrjSession>
- <DocsAndViews NumberOfDocuments="11" >
-  <Doc0 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/brick.h" >
-   <View0 Encoding="UTF-8" line="32" Type="Source" />
+ <DocsAndViews NumberOfDocuments="8" >
+  <Doc0 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeketool.cpp" >
+   <View0 Encoding="UTF-8" line="34" Type="Source" />
   </Doc0>
-  <Doc1 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/brick.cpp" >
-   <View0 Encoding="UTF-8" line="32" Type="Source" />
+  <Doc1 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeketool.h" >
+   <View0 Encoding="UTF-8" line="24" Type="Source" />
   </Doc1>
-  <Doc2 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opekeview.h" >
-   <View0 Encoding="UTF-8" line="146" Type="Source" />
+  <Doc2 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opekeview.cpp" >
+   <View0 Encoding="UTF-8" line="524" Type="Source" />
   </Doc2>
-  <Doc3 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opekeview.cpp" >
-   <View0 Encoding="UTF-8" line="558" Type="Source" />
+  <Doc3 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opekeview.h" >
+   <View0 Encoding="UTF-8" line="40" Type="Source" />
   </Doc3>
-  <Doc4 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeke.h" >
-   <View0 Encoding="UTF-8" line="66" Type="Source" />
+  <Doc4 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/brick.cpp" >
+   <View0 Encoding="UTF-8" line="133" Type="Source" />
   </Doc4>
-  <Doc5 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeke.cpp" >
-   <View0 Encoding="UTF-8" line="169" Type="Source" />
+  <Doc5 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/brick.h" >
+   <View0 Encoding="UTF-8" line="60" Type="Source" />
   </Doc5>
-  <Doc6 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeke.kcfg" >
-   <View0 Encoding="UTF-8" Type="Source" />
+  <Doc6 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeke.cpp" >
+   <View0 Encoding="UTF-8" line="324" Type="Source" />
   </Doc6>
-  <Doc7 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/settings.kcfgc" >
-   <View0 Encoding="UTF-8" Type="Source" />
+  <Doc7 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/opeke.h" >
+   <View0 Encoding="UTF-8" line="67" Type="Source" />
   </Doc7>
-  <Doc8 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/undoaction.h" >
-   <View0 Encoding="UTF-8" line="28" Type="Source" />
-  </Doc8>
-  <Doc9 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/undoaction.cpp" >
-   <View0 Encoding="UTF-8" line="153" Type="Source" />
-  </Doc9>
-  <Doc10 NumberOfViews="1" URL="file:///home/miha/kde-devel/Opeke/CMakeLists.txt" >
-   <View0 Encoding="UTF-8" line="23" Type="Source" />
-  </Doc10>
  </DocsAndViews>
  <pluginList>
   <kdevdebugger>
@@ -52,10 +43,10 @@
    <subversion base="" />
   </kdevsubversion>
   <kdevvalgrind>
-   <executable path="" params="" />
+   <executable path="/home/miha/kde-devel/bin/opeke" params="" />
    <valgrind path="/usr/bin/valgrind" params=" --tool=memcheck --leak-check=yes" />
-   <calltree path="" params="" />
-   <kcachegrind path="" />
+   <calltree path="/usr/bin/valgrind" params="--tool=callgrind" />
+   <kcachegrind path="/usr/bin/kcachegrind" />
   </kdevvalgrind>
  </pluginList>
 </KDevPrjSession>

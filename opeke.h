@@ -21,8 +21,9 @@
 #ifndef OPEKE_H
 #define OPEKE_H
 
-#include <kxmlguiwindow.h>
-#include <kaction.h>
+#include <KXmlGuiWindow>
+#include <KAction>
+#include <QtGui/QDockWidget>
 
 #include "brick.h"
 #include "opekeview.h"
@@ -65,10 +66,14 @@ class Opeke : public KXmlGuiWindow
 		/*void readConfig();
 		void saveSettings();*/
 		void setupActions();
+		bool maybeSave();
+		void setWindowModified(bool mode);
+		bool windowModified;
 
 		Ui::prefs_base ui_prefs_base;
 		OpekeView *m_view;
 		OpekeTool *m_tool;
+		QDockWidget *m_dockWidget;
 
 		KPrinter   *m_printer;
 		KToggleAction *m_toolbarAction;
@@ -79,6 +84,9 @@ class Opeke : public KXmlGuiWindow
 		bool m_gridEnabled;
 			
 		KAction *undoAct, *redoAct, *removeAct;
+		
+	protected:
+		virtual void closeEvent(QCloseEvent *event);
 		
 	private slots:
 		void fileNew();
@@ -96,6 +104,8 @@ class Opeke : public KXmlGuiWindow
 		void reload();
 		void clear();
 		void BricksLoaded(QList<Brick*>);
+		
+		
 };
 
 #endif // _opeke_H_

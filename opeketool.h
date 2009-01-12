@@ -21,28 +21,49 @@
 #ifndef OPEKE_TOOL_H
 #define OPEKE_TOOL_H
 
-#include "opeke.h"
-
-#include <QtGui/QDockWidget>
-
-#include "ui_opeketool_base.h"
+#include <QtGui/QWidget>
+#include <QtGui/QResizeEvent>
+#include <QtGui/QButtonGroup>
+#include <QtGui/QFormLayout>
+#include <QtGui/QVBoxLayout>
+#include <QtGui/QWidget>
+#include "KColorCombo"
+#include "KComboBox"
+#include "KNumInput"
+#include "KPushButton"
+#include "brick.h"
 
 class QPainter;
 class KUrl;
 
-class OpekeTool : public QDockWidget, public Ui::opeketool_base
+class OpekeTool : public QWidget
 {
 		Q_OBJECT
 
 	public:
 		OpekeTool ( QWidget * parent );
 		virtual ~OpekeTool();
-
-		Ui::opeketool_base ui_opeketool_base;
-
 	private:
+		QBoxLayout *MainLayout;
+		QVBoxLayout *SizeLayout;
+		KIntNumInput *sizeX;
+		KIntNumInput *sizeZ;
+		KIntNumInput *sizeY;
+		QVBoxLayout *ColorLayout;
+		KColorCombo *color;
+		KIntNumInput *planeZ;
+		QVBoxLayout *RotateLayout;
+		KPushButton *b_rotateX;
+		KPushButton *b_rotateY;
+		KPushButton *b_rotateZ;
+		KComboBox *b_orientation;
+		KComboBox *b_orientation_cyl;
 
+		void setupUi();
 		void setupActions();
+		
+	protected:
+		void resizeEvent(QResizeEvent *event);
 
 	private slots:
 		void refresh();
@@ -56,7 +77,8 @@ class OpekeTool : public QDockWidget, public Ui::opeketool_base
 		void changeTypeInvCyl();
 		void changeTypeSphere();
 		
-	//	void changeOrientation(int changedOrientation);
+		void changePlaneZ(int);
+		void changeOrientation(int changedOrientation);
 		void changeCylOrientation(int changedOrientation);
 				
 	signals:
@@ -75,6 +97,13 @@ class OpekeTool : public QDockWidget, public Ui::opeketool_base
 		void rotX();
 		void rotY();
 		void rotZ();
+		
+		void colorChanged(QColor);
+		void colorViewed(QColor);
+		void planeChanged(int);
+		void sizeXChanged(int);
+		void sizeYChanged(int);
+		void sizezChanged(int);
 };
 
 #endif //opekeTOOL_H

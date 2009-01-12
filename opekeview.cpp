@@ -18,29 +18,25 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define BUFSIZE 64
-#define GRIDSIZE 20.0
-#define CV 36
-
 #include "opekeview.h"
 #include "settings.h"
 
 #include <KMessageBox>
 #include <KIO/NetAccess>
+#include <KLocale>
+#include <KSaveFile>
+#include <KDebug>
 
-#include <math.h>
-#include <klocale.h>
 #include <QtGui/QLabel>
 #include <QtGui/QWidget>
 #include <QX11Info>
 
 #include <Ogre.h>
 
-#include <kdebug.h>
+#include <math.h>
 
-#ifndef PI
 #define PI 3.141592
-#endif
+#define VERSION "0.4"
 
 OpekeView::OpekeView ( QWidget * )
 		: fileName ( QString() )
@@ -81,7 +77,7 @@ void OpekeView::setupOgre()
 {
 	try
 	{
-		mRoot = new Ogre::Root ( "../share/apps/opeke/plugins.cfg","ogre.cfg","ogre.log" );
+		mRoot = new Ogre::Root ( "/home/miha/kde-devel/share/apps/opeke/plugins.cfg","ogre.cfg","ogre.log" );
 		if ( !mRoot->restoreConfig() )
 		{
 			if ( !mRoot->showConfigDialog() )
@@ -91,7 +87,7 @@ void OpekeView::setupOgre()
 		}
 
 		Ogre::ConfigFile cf;
-		cf.load ( "../share/apps/opeke/resources.cfg" );
+		cf.load ( "/home/miha/kde-devel/share/apps/opeke/resources.cfg" );
 
 		Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
 		while ( seci.hasMoreElements() )
@@ -200,7 +196,7 @@ void OpekeView::mousePressEvent ( QMouseEvent *event )
 	switch ( event->buttons() )
 	{
 		case ( Qt::RightButton ) :
-						moving = Ogre::Vector3 ( event->x(), -event->y(), 0 );
+						moving = Ogre::Vector3 (-event->x(), event->y(), 0 );
 			break;
 		case ( Qt::LeftButton ) :
 						if ( !mode )
@@ -233,7 +229,7 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 	if ( !hasFocus() ) setFocus();
 	if ( event->buttons() == Qt::RightButton )
 	{
-		current = Ogre::Vector3 ( event->x(), event->y(), 0 );
+		current = Ogre::Vector3 ( -event->x(), event->y(), 0 );
 		mCamera->moveRelative ( ( current - moving ) /2 );
 		moving = current;
 	}
@@ -462,7 +458,7 @@ void OpekeView::wheelEvent ( QWheelEvent *event )
 	update();
 }
 
-Brick* OpekeView::newBrick(int type)
+Brick* OpekeView::newBrick ( int type )
 {
 	nodeCount++;
 	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
@@ -501,7 +497,7 @@ Brick* OpekeView::newBrick(int type)
 
 Brick* OpekeView::newBrick()
 {
-	return newBrick(mBrickType);
+	return newBrick ( mBrickType );
 }
 
 
@@ -513,7 +509,7 @@ Ogre::Vector3 OpekeView::transform ( int x, int y )
 	Ogre::Ray mRay = mCamera->getCameraToViewportRay ( xf, yf );
 	Ogre::Vector3 mPoint;
 
-	mPlane = Ogre::Plane ( Ogre::Vector3 ( 0.0,0.0,1.0 ),Ogre::Real ( planeZ ) );
+	Ogre::Plane mPlane ( Ogre::Vector3 ( 0.0,0.0,1.0 ),Ogre::Real ( planeZ ) );
 	std::pair<bool, Ogre::Real> v = mRay.intersects ( mPlane );
 	if ( v.first )
 	{
@@ -526,7 +522,7 @@ Ogre::Vector3 OpekeView::transform ( int x, int y )
 Brick* OpekeView::setSelect ( int x, int y )
 {
 	Ogre::Ray mouseRay = mCamera->getCameraToViewportRay ( Ogre::Real ( x ) /Ogre::Real ( mViewport->getActualWidth() ), Ogre::Real ( y ) /Ogre::Real ( mViewport->getActualHeight() ) );
-	mRaySceneQuery = mSceneManager->createRayQuery ( mouseRay );
+	Ogre::RaySceneQuery* mRaySceneQuery = mSceneManager->createRayQuery ( mouseRay );
 	mRaySceneQuery->setSortByDistance ( true );
 	Ogre::RaySceneQueryResult result = mRaySceneQuery->execute();
 
@@ -570,10 +566,10 @@ void OpekeView::newScene()
 	setBuildMode();
 	undoList.clear();
 	redoList.clear();
+	activeBrick = 0;
 	update();
 	emit undoEmpty ( true );
 	emit redoEmpty ( true );
-	emit modified();
 }
 
 void OpekeView::setBuildMode()
@@ -632,6 +628,7 @@ void OpekeView::setColor ( QColor signaled_color )
 		activeBrick->setColor ( signaled_color );
 	}
 	mColor = Brick::toOgreColour ( signaled_color );
+	emit modified();
 	update();
 }
 
@@ -668,18 +665,11 @@ void OpekeView::delBrick()
 	if ( mode == 0 && activeBrick )
 	{
 		activeBrick->hide();
-
 		UndoAction *u = new UndoAction ( activeBrick, UndoAction::Delete );
 		undoList.append ( u );
-
 		activeBrick = 0;
-
+		emit delEnable(false);
 		emit modified();
-	}
-	if ( selected >= Bricks.count() )
-	{
-		selected = -1;
-		emit delEnable ( false );
 	}
 	update();
 }
@@ -726,6 +716,7 @@ void OpekeView::changeType ( int changedType )
 		delete activeBrick;
 		activeBrick = newBrick();
 	}
+	update();
 }
 
 void OpekeView::changeTypeBlock()
@@ -761,16 +752,19 @@ void OpekeView::changeOrientation ( int changedOrientation )
 void OpekeView::rotateX()
 {
 	if ( activeBrick ) activeBrick->node()->pitch ( Ogre::Radian ( PI/2 ) );
+	update();
 }
 
 void OpekeView::rotateY()
 {
 	if ( activeBrick ) activeBrick->node()->yaw ( Ogre::Radian ( PI/2 ) );
+	update();
 }
 
 void OpekeView::rotateZ()
 {
 	if ( activeBrick ) activeBrick->node()->roll ( Ogre::Radian ( PI/2 ) );
+	update();
 }
 
 void OpekeView::sendOrientation()
@@ -780,10 +774,6 @@ void OpekeView::sendOrientation()
 
 void OpekeView::openBricks ( QFile* file )
 {
-	/**ž
-	 * TODO: Fix the crashing
-	 */
-	
 	newScene();
 	QList<Brick*> inBricks;
 	QDataStream in ( file );
@@ -813,7 +803,7 @@ void OpekeView::openBricks ( QFile* file )
 			QColor tColor;
 			in>>tColor;
 			br->setColor ( tColor );
-			br->setSize( inPos[2] - inPos[4] );
+			br->setSize ( inPos[2] - inPos[4] );
 			inBricks.append ( br );
 		}
 	}
@@ -828,26 +818,26 @@ void OpekeView::openBricks ( QFile* file )
 
 			int size[3];
 			in >> size[0] >> size[1] >> size[2];
-			br->setSize ( Ogre::Vector3 ( size[1], size[2], size[3] ));
+			br->setSize ( Ogre::Vector3 ( size[1], size[2], size[3] ) );
 
-			               Ogre::Vector3 inPos, tPos = Ogre::Vector3 ( 0, 0, 0 );
-			               for ( int m = 0; m < 8; m++ )
-		{
-			in >> inPos.x;
-			in >> inPos.y;
-			in >> inPos.z;
-			tPos += inPos;
+			Ogre::Vector3 inPos, tPos = Ogre::Vector3 ( 0, 0, 0 );
+			for ( int m = 0; m < 8; m++ )
+			{
+				in >> inPos.x;
+				in >> inPos.y;
+				in >> inPos.z;
+				tPos += inPos;
+			}
+			br->setPosition ( tPos/8 );
+
+			QColor tColor;
+			in>>tColor;
+			br->setColor ( tColor );
+
+			inBricks.append ( br );
 		}
-		br->setPosition ( tPos/8 );
-
-		QColor tColor;
-		in>>tColor;
-		br->setColor ( tColor );
-
-		inBricks.append ( br );
 	}
-}
-else if ( fileVersion == "0.3" )
+	else if ( fileVersion == "0.3" )
 	{
 		while ( !in.atEnd() )
 		{
@@ -874,6 +864,26 @@ else if ( fileVersion == "0.3" )
 			inBricks.append ( br );
 		}
 	}
+	else if ( fileVersion == "0.4" )
+	{
+		Ogre::Vector3 oSize, oPos;
+		int oType, oOrientation;
+		QColor oColor;
+		Brick* oBrick;
+		while ( !in.atEnd() )
+		{
+			in >> oType;
+			in >> oPos.x >> oPos.y >> oPos.z;
+			in >> oSize.x >> oSize.y >> oSize.z;
+			in >> oColor >> oOrientation;
+			oBrick = newBrick(oType);
+			oBrick->setPosition(oPos);
+			oBrick->setSize(oSize);
+			oBrick->setColor(oColor);
+			oBrick->setOrientation(oOrientation);
+			Bricks.append(oBrick);
+		}
+	}
 	else
 	{
 		KMessageBox::error ( this, i18n ( "This file was made by an unknown Opeke version." ) );
@@ -881,13 +891,31 @@ else if ( fileVersion == "0.3" )
 	}
 	newScene();
 	Bricks = inBricks;
+	update();
 }
 
 void OpekeView::saveBricks ( KSaveFile* file )
 {
 	/**
 	 * TODO: Save Bricks into the file
-	 */	
+	 */
+	
+	QDataStream output ( file );
+	QString program = "Opeke", fileVersion = VERSION;
+	output << program << fileVersion;
+	Ogre::Vector3 sSize, sPos;
+	foreach ( Brick *b, Bricks )
+	{
+		if ( b && !b->isHidden() )
+		{
+			sSize = b->size();
+			sPos = b->position();
+			output << b->type();
+			output << sSize.x << sSize.y << sSize.z;
+			output << sPos.x << sPos.y << sPos.z;
+			output << b->color() << b->orientation();
+		}
+	}
 }
 
 #include "opekeview.moc"

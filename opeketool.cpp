@@ -18,28 +18,33 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "KLocale"
+
 #include "settings.h"
 #include "opeketool.h"
 
-OpekeTool::OpekeTool ( QWidget * )
+OpekeTool::OpekeTool ( QWidget * parent)
+	: QWidget(parent)
 {
-	ui_opeketool_base.setupUi ( this );
-	ui_opeketool_base.sizeX->setLabel ( i18n ( "Length" ) );
-	ui_opeketool_base.sizeY->setLabel ( i18n ( "Width" ) );
-	ui_opeketool_base.sizeZ->setLabel ( i18n ( "Height" ) );
-	QList<QColor> emptyList;
-	ui_opeketool_base.color->setColors (emptyList);
-	ui_opeketool_base.color->setColor (Qt::red);
+	setupUi ();
 	
-	ui_opeketool_base.planeZ->setLabel ( i18n ( "Plane height" ) );
+	sizeX->setLabel ( i18n ( "Length" ) );
+	sizeY->setLabel ( i18n ( "Width" ) );
+	sizeZ->setLabel ( i18n ( "Height" ) );
+	QList<QColor> emptyList;
+	color->setColors (emptyList);
+	color->setColor (Qt::red);
+	
+	planeZ->setLabel ( i18n ( "Plane height" ) );
 	changeType(Brick::Block);
 
 	setupActions();
 	
-	ui_opeketool_base.sizeX->setValue(6);
-	ui_opeketool_base.sizeY->setValue(4);
-	ui_opeketool_base.sizeZ->setValue(3);
+	sizeX->setValue(24);
+	sizeY->setValue(16);
+	sizeZ->setValue(12);
 	
+
 }
 
 OpekeTool::~OpekeTool()
@@ -49,21 +54,30 @@ OpekeTool::~OpekeTool()
 
 void OpekeTool::setupActions()
 {
-	//	connect(ui_opeketool_base.buttonRefresh, SIGNAL(clicked()), m_view, SLOT(updateGL()));
+	//	connect(buttonRefresh, SIGNAL(clicked()), m_view, SLOT(updateGL()));
 
-	connect ( this, SIGNAL ( changeSizeX ( int ) ), ui_opeketool_base.sizeX, SLOT ( setValue ( int ) ) );
-	connect ( this, SIGNAL ( changeSizeY ( int ) ), ui_opeketool_base.sizeY, SLOT ( setValue ( int ) ) );
-	connect ( this, SIGNAL ( changeSizeZ ( int ) ), ui_opeketool_base.sizeZ, SLOT ( setValue ( int ) ) );
+	connect ( this, SIGNAL ( changeSizeX ( int ) ), sizeX, SLOT ( setValue ( int ) ) );
+	connect ( this, SIGNAL ( changeSizeY ( int ) ), sizeY, SLOT ( setValue ( int ) ) );
+	connect ( this, SIGNAL ( changeSizeZ ( int ) ), sizeZ, SLOT ( setValue ( int ) ) );
 
-	//	connect(ui_opeketool_base.color, SIGNAL(highlighted(QColor)), m_view, SLOT(setColor(QColor)));
-	//	connect(ui_opeketool_base.color, SIGNAL(activated(QColor)), m_view, SLOT(setColor(QColor)));
+	//	connect(color, SIGNAL(highlighted(QColor)), m_view, SLOT(setColor(QColor)));
+	//	connect(color, SIGNAL(activated(QColor)), m_view, SLOT(setColor(QColor)));
 	
-	connect (ui_opeketool_base.b_rotateX, SIGNAL(clicked()), this, SLOT(rotateX()));
-	connect (ui_opeketool_base.b_rotateY, SIGNAL(clicked()), this, SLOT(rotateY()));
-	connect (ui_opeketool_base.b_rotateZ, SIGNAL(clicked()), this, SLOT(rotateZ()));
+	connect (b_rotateX, SIGNAL(clicked()), this, SLOT(rotateX()));
+	connect (b_rotateY, SIGNAL(clicked()), this, SLOT(rotateY()));
+	connect (b_rotateZ, SIGNAL(clicked()), this, SLOT(rotateZ()));
 	
-	connect (ui_opeketool_base.b_orientation, SIGNAL(activated(int)), this, SIGNAL(setOrientation(int)));
-	connect (ui_opeketool_base.b_orientation_cyl, SIGNAL(activated(int)), this, SIGNAL(setCylOrientation(int)));
+	connect (b_orientation, SIGNAL(activated(int)), this, SIGNAL(setOrientation(int)));
+	connect (b_orientation_cyl, SIGNAL(activated(int)), this, SIGNAL(setCylOrientation(int)));
+	
+	connect ( color, SIGNAL ( highlighted ( QColor ) ), this, SIGNAL ( colorChanged( QColor ) ) );
+	connect ( color, SIGNAL ( activated ( QColor ) ), this, SIGNAL ( colorViewed ( QColor ) ) );
+
+	connect ( planeZ, SIGNAL ( valueChanged ( int ) ), this, SIGNAL ( planeChanged ( int ) ) );
+
+	connect ( sizeX, SIGNAL ( valueChanged ( int ) ), this, SIGNAL ( SizeXChanged ( int ) ) );
+	connect ( sizeY, SIGNAL ( valueChanged ( int ) ), this, SIGNAL ( SizeYChanged ( int ) ) );
+	connect ( sizeZ, SIGNAL ( valueChanged ( int ) ), this, SIGNAL ( SizeZChanged ( int ) ) );
 }
 
 void OpekeTool::refresh()
@@ -73,9 +87,9 @@ void OpekeTool::refresh()
 
 void OpekeTool::rotateX()
 {
-	int temp = ui_opeketool_base.sizeY->value();
-	ui_opeketool_base.sizeY->setValue(ui_opeketool_base.sizeZ->value());
-	ui_opeketool_base.sizeZ->setValue(temp);
+	int temp = sizeY->value();
+	sizeY->setValue(sizeZ->value());
+	sizeZ->setValue(temp);
 	emit rotX();
 	emit tool_refresh();
 	emit getCylOrientation();
@@ -83,9 +97,9 @@ void OpekeTool::rotateX()
 
 void OpekeTool::rotateY()
 {
-	int temp = ui_opeketool_base.sizeZ->value();
-	ui_opeketool_base.sizeZ->setValue(ui_opeketool_base.sizeX->value());
-	ui_opeketool_base.sizeX->setValue(temp);
+	int temp = sizeZ->value();
+	sizeZ->setValue(sizeX->value());
+	sizeX->setValue(temp);
 	emit rotY();
 	emit tool_refresh();
 	emit getCylOrientation();
@@ -93,9 +107,9 @@ void OpekeTool::rotateY()
 
 void OpekeTool::rotateZ()
 {
-	int temp = ui_opeketool_base.sizeX->value();
-	ui_opeketool_base.sizeX->setValue(ui_opeketool_base.sizeY->value());
-	ui_opeketool_base.sizeY->setValue(temp);
+	int temp = sizeX->value();
+	sizeX->setValue(sizeY->value());
+	sizeY->setValue(temp);
 	emit rotZ();
 	emit tool_refresh();
 	emit getCylOrientation();
@@ -105,18 +119,18 @@ void OpekeTool::changeType(int changedType)
 {
 	if (changedType == Brick::Roof)
 	{
-		ui_opeketool_base.b_orientation->show();
-		ui_opeketool_base.b_orientation_cyl->hide();
+		b_orientation->show();
+		b_orientation_cyl->hide();
 	}
 	else if (changedType == Brick::Cylinder || changedType == Brick::InvertedCylinder)
 	{
-		ui_opeketool_base.b_orientation->hide();
-		ui_opeketool_base.b_orientation_cyl->show();
+		b_orientation->hide();
+		b_orientation_cyl->show();
 	}
 	else
 	{
-		ui_opeketool_base.b_orientation->hide();
-		ui_opeketool_base.b_orientation_cyl->hide();
+		b_orientation->hide();
+		b_orientation_cyl->hide();
 	}
 }
 
@@ -128,19 +142,19 @@ void OpekeTool::changeTypeBlock()
 void OpekeTool::changeTypeRoof()
 {
 	changeType(Brick::Roof);
-	emit setOrientation(ui_opeketool_base.b_orientation->currentIndex());
+	emit setOrientation(b_orientation->currentIndex());
 }
 
 void OpekeTool::changeTypeCylinder()
 {
 	changeType(Brick::Cylinder);
-	emit setCylOrientation(ui_opeketool_base.b_orientation_cyl->currentIndex());
+	emit setCylOrientation(b_orientation_cyl->currentIndex());
 }
 
 void OpekeTool::changeTypeInvCyl()
 {
 	changeType(Brick::InvertedCylinder);
-	emit setCylOrientation(ui_opeketool_base.b_orientation_cyl->currentIndex());
+	emit setCylOrientation(b_orientation_cyl->currentIndex());
 }
 
 void OpekeTool::changeTypeSphere()
@@ -148,9 +162,85 @@ void OpekeTool::changeTypeSphere()
 	changeType(Brick::Sphere);
 }
 
+void OpekeTool::changeOrientation(int changedOrientation)
+{
+	b_orientation->setCurrentIndex(changedOrientation);	
+}
+
 void OpekeTool::changeCylOrientation(int changedOrientation)
 {
-	ui_opeketool_base.b_orientation_cyl->setCurrentIndex(changedOrientation);
+	b_orientation_cyl->setCurrentIndex(changedOrientation);
+}
+
+void OpekeTool::resizeEvent(QResizeEvent * event)
+{
+	if (event->size().width() > event->size().height())
+	MainLayout->setDirection(QBoxLayout::LeftToRight);
+	else
+	MainLayout->setDirection(QBoxLayout::TopToBottom);
+}
+
+void OpekeTool::setupUi()
+{
+	setObjectName("Tool Options");
+	if (layout()) delete layout();
+	MainLayout = new QBoxLayout(QBoxLayout::TopToBottom, this);
+	SizeLayout = new QVBoxLayout();
+	
+	sizeX = new KIntNumInput(this);
+	sizeX->setValue(24);
+	sizeX->setMinimum(1);
+	
+	sizeY = new KIntNumInput(this);
+	sizeY->setValue(16);
+	sizeY->setMinimum(1);
+	SizeLayout->addWidget(sizeY);
+
+	SizeLayout->addWidget(sizeX);
+	sizeZ = new KIntNumInput(this);
+	sizeZ->setValue(12);
+	sizeZ->setMinimum(1);
+	SizeLayout->addWidget(sizeZ);
+	
+	MainLayout->addLayout(SizeLayout);
+
+	ColorLayout = new QVBoxLayout();
+	
+	color = new KColorCombo(this);
+	ColorLayout->addWidget(color);
+
+	planeZ = new KIntNumInput(this);
+	ColorLayout->addWidget(planeZ);
+	
+	MainLayout->addLayout(ColorLayout);
+
+	RotateLayout = new QVBoxLayout();
+	
+	b_rotateX = new KPushButton(this);
+	RotateLayout->addWidget(b_rotateX);
+
+	b_rotateY = new KPushButton(this);
+	RotateLayout->addWidget(b_rotateY);
+
+	b_rotateZ = new KPushButton(this);
+	RotateLayout->addWidget(b_rotateZ);
+
+	b_orientation = new KComboBox(this);
+	RotateLayout->addWidget(b_orientation);
+
+	b_orientation_cyl = new KComboBox(this);
+	RotateLayout->addWidget(b_orientation_cyl);
+	
+	MainLayout->addLayout(RotateLayout);
+	if (height() > width())
+		MainLayout->setDirection(QBoxLayout::TopToBottom);
+	else
+		MainLayout->setDirection(QBoxLayout::LeftToRight);
+}
+
+void OpekeTool::changePlaneZ(int value)
+{
+	planeZ->setValue(value);
 }
 
 #include "opeketool.moc"

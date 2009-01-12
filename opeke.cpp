@@ -26,6 +26,7 @@
 
 #include <QtGui/QDropEvent>
 #include <QtGui/QMainWindow>
+#include <QtGui/QDockWidget>
 
 #include <KConfigDialog>
 #include <kstatusbar.h>
@@ -55,10 +56,11 @@ Opeke::Opeke()
 	// tell the KXmlGuiWindow that this is indeed the main widget
 	m_view = new OpekeView ( this );
 	m_tool = new OpekeTool ( this );
+	m_dockWidget = new QDockWidget(this);
 
-	m_tool->setWindowTitle ( i18n ("Tool Options") );
-
-	addDockWidget (Qt::LeftDockWidgetArea, m_tool);
+	addDockWidget (Qt::LeftDockWidgetArea, m_dockWidget);
+	m_dockWidget->setWidget(m_tool);
+	m_tool->show();
 	setCentralWidget (m_view);
 	m_view->setFocus();
 
@@ -79,7 +81,7 @@ Opeke::Opeke()
 	setupGUI();
 	
 	
-	setWindowTitle("Opeke [*]");
+	setCaption(QString::null, false);
 }
 
 Opeke::~Opeke()
@@ -167,15 +169,15 @@ void Opeke::setupActions()
 	connect ( this, SIGNAL ( reload() ), m_view, SLOT ( update() ) );
 	connect ( this, SIGNAL ( clear() ), m_view, SLOT ( newScene() ) );
 
-	connect ( m_tool->ui_opeketool_base.color, SIGNAL ( highlighted ( QColor ) ), m_view, SLOT ( viewColor ( QColor ) ) );
-	connect ( m_tool->ui_opeketool_base.color, SIGNAL ( activated ( QColor ) ), m_view, SLOT ( setColor ( QColor ) ) );
+	connect ( m_tool, SIGNAL ( colorViewed ( QColor ) ), m_view, SLOT ( viewColor ( QColor ) ) );
+	connect ( m_tool, SIGNAL ( colorChanged ( QColor ) ), m_view, SLOT ( setColor ( QColor ) ) );
 
-	connect ( m_tool->ui_opeketool_base.planeZ, SIGNAL ( valueChanged ( int ) ), m_view, SLOT ( setPlaneZ ( int ) ) );
+	connect ( m_tool, SIGNAL ( planeChanged ( int ) ), m_view, SLOT ( setPlaneZ ( int ) ) );
 
-	connect ( m_tool->ui_opeketool_base.sizeX, SIGNAL ( valueChanged ( int ) ), m_view, SLOT ( setSizeX ( int ) ) );
-	connect ( m_tool->ui_opeketool_base.sizeY, SIGNAL ( valueChanged ( int ) ), m_view, SLOT ( setSizeY ( int ) ) );
-	connect ( m_tool->ui_opeketool_base.sizeZ, SIGNAL ( valueChanged ( int ) ), m_view, SLOT ( setSizeZ ( int ) ) );
-	connect ( m_view, SIGNAL(planeChanged(int)), m_tool->ui_opeketool_base.planeZ, SLOT(setValue(int)));
+	connect ( m_tool, SIGNAL ( sizeXChanged ( int ) ), m_view, SLOT ( setSizeX ( int ) ) );
+	connect ( m_tool, SIGNAL ( sizeYChanged ( int ) ), m_view, SLOT ( setSizeY ( int ) ) );
+	connect ( m_tool, SIGNAL ( sizeZChanged ( int ) ), m_view, SLOT ( setSizeZ ( int ) ) );
+	connect ( m_view, SIGNAL(planeChanged(int)), m_tool, SLOT(setPlaneZ(int)));
 
 	connect ( m_view, SIGNAL(undoEmpty(bool)), this, SLOT(undoEnable(bool)));
 	connect ( m_view, SIGNAL(redoEmpty(bool)), this, SLOT(redoEnable(bool)));
@@ -194,28 +196,25 @@ void Opeke::setupActions()
 
 void Opeke::fileNew()
 {
-	// this slot is called whenever the File->New menu is selected,
-	// the New shortcut is pressed (CTRL+N) or the New toolbar
-	// button is clicked
-	fileName.clear();
-	setWindowTitle(fileName + " - Opeke [*]");
-	setWindowModified(false);
-	emit clear();
+	if (maybeSave())
+	{	
+		emit clear();
+		fileName.clear();
+		setWindowModified(false);
+		setCaption(fileName, false);
+	}
 }
 
 void Opeke::saveFileAs ( const QString &outputFileName )
 {
 	KSaveFile *file  = new KSaveFile(outputFileName);
 	file->open();
-	QDataStream output ( file );
-	QString program = "Opeke", fileVersion = VERSION;
-	output << program << fileVersion;
 	m_view->saveBricks(file);
 	
 	file->finalize();
 	file->close();
-	fileName = outputFileName;
-	setWindowTitle(fileName + " Opeke [*]");
+	fileName = KUrl(outputFileName).fileName();
+	setCaption(fileName, false);
 	setWindowModified(false);
 }
 
@@ -244,11 +243,6 @@ void Opeke::openFile()
 
 void Opeke::openFile(const QString &inputFileName)
 {
-	/**
-	 * TODO: Rewrite this function to implement Entities and Nodes
-	 * Rewrite only the actual loading of Bricks, the stucture is OK
-	 */
-	
 	QString tmpFile;
 	if ( KIO::NetAccess::download (inputFileName, tmpFile, this ) )
 	{
@@ -257,8 +251,8 @@ void Opeke::openFile(const QString &inputFileName)
 		file->open ( QIODevice::ReadOnly );
 		m_view->openBricks(file);
 		file->close();
-		setWindowTitle(fileName + " - Opeke [*]");
 		setWindowModified(false);
+		setCaption(fileName, false);
 	}
 	else
 	{
@@ -315,13 +309,36 @@ void Opeke::removeEnable(bool enable)
 
 void Opeke::fileModified()
 {
-	if (fileName.isEmpty()) setWindowTitle(fileName + " - Opeke [*]");
-	else setWindowTitle("Opeke [*]");
 	setWindowModified(true);
+	setCaption(fileName, true);
 }
 
+void Opeke::closeEvent(QCloseEvent * event)
+{
+	if (maybeSave()) {
+		event->accept();
+	} else {
+		event->ignore();
+	}
+}
 
+bool Opeke::maybeSave()
+{
+	if (windowModified) return true;
+	switch (KMessageBox::questionYesNoCancel(this, i18n ("The document has been modified.\n" "Do you want to save your changes?"), i18n ("Unsaved changes")))
+	{
+		case KMessageBox::Yes:
+			saveFile();
+		case KMessageBox::No:
+			return true;
+		default:
+			return false;
+	}
+}
 
-
+void Opeke::setWindowModified(bool mode)
+{
+	windowModified = mode;
+}
 
 #include "opeke.moc"
