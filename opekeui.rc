@@ -23,6 +23,7 @@
 		<Action name="invCyl_action" />
 		<Action name="sphere_action" />
 	</Menu>
+	<Action name="snapshot_action" />
   </Menu>
 </MenuBar>
 </kpartgui>

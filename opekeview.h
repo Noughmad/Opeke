@@ -74,8 +74,6 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 
 
 		void update();
-		virtual void setupOgre();
-		virtual void setupScene();
 
 		void openBricks ( QFile* file );
 		void saveBricks ( KSaveFile* file );
@@ -83,7 +81,10 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 
 
 	protected:
-
+		
+		void setupOgre();
+		void setupScene();
+		
 		void paintEvent ( QPaintEvent * );
 		void resizeEvent ( QResizeEvent* );
 
@@ -141,6 +142,7 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		 * 1 = build mode
 		 *	0 = select mode
 		 */
+		bool discretePosition;
 		int orientation;
 
 		bool checkCollision ( Brick *toCheck );

@@ -29,6 +29,7 @@
 #include "opekeview.h"
 #include "opeketool.h"
 #include "ui_prefs_base.h"
+#include "ui_prefs_build.h"
 
 class OpekeView;
 class OpekeTool;
@@ -69,8 +70,9 @@ class Opeke : public KXmlGuiWindow
 		bool maybeSave();
 		void setWindowModified(bool mode);
 		bool windowModified;
-
+		
 		Ui::prefs_base ui_prefs_base;
+		Ui::prefs_build ui_prefs_build;
 		OpekeView *m_view;
 		OpekeTool *m_tool;
 		QDockWidget *m_dockWidget;
@@ -99,6 +101,8 @@ class Opeke : public KXmlGuiWindow
 		void redoEnable(bool empty);
 		void removeEnable(bool enable);
 		void fileModified();
+		
+		void saveScreen();
 
 	signals:
 		void reload();

@@ -127,11 +127,7 @@ Ogre::Vector3 Brick::size()
 
 void Brick::setPosition ( Ogre::Vector3 pos )
 {
-	Ogre::Vector3 p;
-	p.x = 4*(int)(pos.x/4);
-	p.y = 4*(int)(pos.y/4);
-	p.z = 4*(int)(pos.z/4);
-	mNode->setPosition ( p );
+	mNode->setPosition ( pos );
 }
 
 Ogre::Vector3 Brick::position()

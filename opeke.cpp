@@ -57,7 +57,7 @@ Opeke::Opeke()
 	m_view = new OpekeView ( this );
 	m_tool = new OpekeTool ( this );
 	m_dockWidget = new QDockWidget(this);
-
+	m_dockWidget->setObjectName("Tool Dock");
 	addDockWidget (Qt::LeftDockWidgetArea, m_dockWidget);
 	m_dockWidget->setWidget(m_tool);
 	m_tool->show();
@@ -114,8 +114,8 @@ void Opeke::setupActions()
 	connect ( build, SIGNAL ( triggered ( bool ) ), m_view, SLOT ( setBuildMode() ) );
 
 	// Start select mode
-	KAction *select = new KAction ( KIcon ( "select" ), i18n ( "Sele&ct" ), this );
-	select->setShortcut(QKeySequence(Qt::Key_C));
+	KAction *select = new KAction ( KIcon ( "select" ), i18n ( "S&elect" ), this );
+	select->setShortcut(QKeySequence(Qt::Key_E));
 	actionCollection()->addAction ( QLatin1String ( "select_action" ), select );
 	connect ( select, SIGNAL ( triggered ( bool ) ), m_view, SLOT ( setSelectMode() ) );
 	
@@ -161,6 +161,11 @@ void Opeke::setupActions()
 	connect (sphere, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeSphere() ));
 	connect (sphere, SIGNAL (triggered (bool)), m_tool, SLOT (changeTypeSphere() ));
 	connect (sphere, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
+	
+	KAction *snapshot = new KAction (KIcon ("ksnapshot"), i18n ("&Take Screenshot"), this);
+	snapshot->setShortcut(QKeySequence("Ctrl+T"));
+	actionCollection()->addAction(QLatin1String("snapshot_action"), snapshot);
+	connect (snapshot, SIGNAL(triggered(bool)), this, SLOT (saveScreen()));
 		
 	connect (m_tool, SIGNAL(setOrientation(int)), m_view, SLOT (changeOrientation(int)));
 	connect (m_tool, SIGNAL(setCylOrientation(int)), m_view, SLOT(changeOrientation(int)));
@@ -274,19 +279,13 @@ void Opeke::optionsPreferences()
 	}
 	KConfigDialog *dialog = new KConfigDialog ( this, "settings", Settings::self() );
 	QWidget *generalSettingsDlg = new QWidget;
-//	QWidget *mouseSettingsDlg = new QWidget;
+	QWidget *buildSettingsDlg = new QWidget;
 	ui_prefs_base.setupUi (generalSettingsDlg);
+	ui_prefs_build.setupUi(buildSettingsDlg);
 	
-	/**
-	 * Here we setup the Combobox options for mouse configuration.
-	 * It's currently not implemented and I'm not sure whether it ever will be.
-	 * If you want more configureation options, mail me, or do it yourself.
-	 */
-	
-//	ui_prefs_mouse.setupUi (mouseSettingsDlg);
 
 	dialog->addPage(generalSettingsDlg, i18n("Display"));
-//	dialog->addPage(mouseSettingsDlg, i18n("Mouse"));
+	dialog->addPage(buildSettingsDlg, i18n("Building"));
 	connect ( dialog, SIGNAL(settingsChanged(const QString&)), m_view, SLOT ( settingsChanged() ) );
 	dialog->setAttribute ( Qt::WA_DeleteOnClose );
 	dialog->show();
@@ -315,16 +314,19 @@ void Opeke::fileModified()
 
 void Opeke::closeEvent(QCloseEvent * event)
 {
-	if (maybeSave()) {
+	if (maybeSave()) 
+	{
 		event->accept();
-	} else {
+	}
+	else
+	{
 		event->ignore();
 	}
 }
 
 bool Opeke::maybeSave()
 {
-	if (windowModified) return true;
+	if (!windowModified) return true;
 	switch (KMessageBox::questionYesNoCancel(this, i18n ("The document has been modified.\n" "Do you want to save your changes?"), i18n ("Unsaved changes")))
 	{
 		case KMessageBox::Yes:
@@ -339,6 +341,14 @@ bool Opeke::maybeSave()
 void Opeke::setWindowModified(bool mode)
 {
 	windowModified = mode;
+}
+
+void Opeke::saveScreen()
+{
+	QPixmap screen = QPixmap::grabWindow(m_view->winId());
+	QString shotName = KFileDialog::getSaveFileName((KUrl)QString::null, "image/png image/jpeg image/bmp", (QWidget*)0, QString::null);
+	if (!shotName.isEmpty())
+		screen.save(shotName, "PNG", -1);
 }
 
 #include "opeke.moc"

@@ -39,12 +39,6 @@ OpekeTool::OpekeTool ( QWidget * parent)
 	changeType(Brick::Block);
 
 	setupActions();
-	
-	sizeX->setValue(24);
-	sizeY->setValue(16);
-	sizeZ->setValue(12);
-	
-
 }
 
 OpekeTool::~OpekeTool()
@@ -188,17 +182,17 @@ void OpekeTool::setupUi()
 	SizeLayout = new QVBoxLayout();
 	
 	sizeX = new KIntNumInput(this);
-	sizeX->setValue(24);
+	sizeX->setValue(6);
 	sizeX->setMinimum(1);
 	
 	sizeY = new KIntNumInput(this);
-	sizeY->setValue(16);
+	sizeY->setValue(4);
 	sizeY->setMinimum(1);
 	SizeLayout->addWidget(sizeY);
 
 	SizeLayout->addWidget(sizeX);
 	sizeZ = new KIntNumInput(this);
-	sizeZ->setValue(12);
+	sizeZ->setValue(3);
 	sizeZ->setMinimum(1);
 	SizeLayout->addWidget(sizeZ);
 	

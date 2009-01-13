@@ -13,6 +13,11 @@
 	    <label>Maximum height of a building</label>
 	    <default>30</default>
     </entry>
+    <entry name="val_discrete" type="Bool">
+	<label>Whether to place bricks on an integer grid or not</label>
+	<default>true</default>
+</entry>
+    
   </group>
   <group name="MainWindow">
   	<entry name="Fullscreen" type="Bool">

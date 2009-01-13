@@ -38,6 +38,10 @@
 #define PI 3.141592
 #define VERSION "0.4"
 
+/**
+ * TODO: LIGHTS, SHADES, AND LIGHTS!
+ */
+
 OpekeView::OpekeView ( QWidget * )
 		: fileName ( QString() )
 
@@ -55,6 +59,7 @@ OpekeView::OpekeView ( QWidget * )
 	mWindow = 0;
 	mCamera = 0;
 	mViewport = 0;
+	mMaterialManager = 0;
 
 	mode = 1;
 
@@ -66,7 +71,8 @@ OpekeView::OpekeView ( QWidget * )
 	undoList.clear();
 	redoList.clear();
 
-	mSize = ( Ogre::Vector3 ( 24, 16, 12 ) );
+	mSize = ( Ogre::Vector3 ( 6, 4, 3 ) );
+	settingsChanged();
 }
 
 OpekeView::~OpekeView()
@@ -116,8 +122,10 @@ void OpekeView::setupOgre()
 		mWindow = mRoot->createRenderWindow ( "Window",width(),height(),false,&miscParams );
 
 		mSceneManager = mRoot->createSceneManager ( Ogre::ST_GENERIC,"SceneManager" );
+		mMaterialManager = Ogre::MaterialManager::getSingletonPtr();
 		mCamera = mSceneManager->createCamera ( "Camera" );
 		mViewport = mWindow->addViewport ( mCamera );
+		mSceneManager->destroyAllLights();
 		mLight = mSceneManager->createLight ( "MainLight" );
 	}
 	catch ( Ogre::Exception& e )
@@ -129,25 +137,30 @@ void OpekeView::setupOgre()
 
 void OpekeView::setupScene()
 {
-	mCamera->setPosition ( Ogre::Vector3 ( 0.0f, 0.0f, -500.0f ) );
-	mCamera->lookAt ( Ogre::Vector3 ( 0.0f,1.0f,1.0f ) );
+	mSceneManager->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+	mCamera->setPosition ( Ogre::Vector3 ( 0.0f, -200.0f, 100.0f ) );
+	mCamera->lookAt ( Ogre::Vector3 ( 0.0f,0.0f,0.0f ) );
 	mCamera->setNearClipDistance ( 5.0f );
 	mCamera->setFarClipDistance ( 5000.0f );
-	mViewport->setBackgroundColour ( Ogre::ColourValue ( 0.0f,0.0f,0.0f ) );
+//	mViewport->setBackgroundColour ( Brick::toOgreColour(bgColor) );
 	mCamera->setAspectRatio ( Ogre::Real ( mViewport->getActualWidth() ) /Ogre::Real ( mViewport->getActualHeight() ) );
 	mCamera->setAutoAspectRatio ( true );
 	mCamera->setFixedYawAxis ( false );
 
-	mLight->setPosition ( 0,100,500 );
+	mLight->setVisible(true);
+	mLight->setType(Ogre::Light::LT_DIRECTIONAL);
+	mLight->setPosition ( 0,-200,100 );
+	mLight->setDirection(0,-1,1);
 	mLight->setDiffuseColour ( 1.0, 1.0, 1.0 );
-	mLight->setSpecularColour ( 0.0, 0.0, 0.0 );
+	mLight->setSpecularColour ( 0.5, 0.5, 0.5 );
 
-	nodeCount = 1;
-	mMaterial = ( ( Ogre::MaterialPtr ) Ogre::MaterialManager::getSingleton().create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General" ) ).getPointer();
-	mMaterial->createTechnique();
-	mMaterial->setAmbient ( 0.5, 0.0, 0.0 );
-	mMaterial->setDiffuse ( 1.0, 0.0, 0.0, 0.5 );
-	mMaterial->setSpecular ( 1.0, 1.0, 1.0, 0.5 );
+	nodeCount = 0;
+	mMaterial = mMaterialManager->getDefaultSettings().getPointer();
+
+	mMaterial->setSelfIllumination(0.0, 0.0, 0.0);
+	mMaterial->setAmbient ( 1.0, 1.0, 1.0 );
+	mMaterial->setDiffuse ( 1.0, 1.0, 1.0, 1.0 );
+	mMaterial->setSpecular ( 0.3, 0.3, 0.3, 1.0 );
 
 	activeBrick = newBrick();
 	activeBrick->setSize ( mSize );
@@ -155,7 +168,7 @@ void OpekeView::setupScene()
 }
 
 void OpekeView::update()
-{
+{	
 	if ( mWindow ) mWindow->update();
 	//if(mRoot) mRoot->renderOneFrame();
 }
@@ -196,7 +209,7 @@ void OpekeView::mousePressEvent ( QMouseEvent *event )
 	switch ( event->buttons() )
 	{
 		case ( Qt::RightButton ) :
-						moving = Ogre::Vector3 (-event->x(), event->y(), 0 );
+			moving = Ogre::Vector3 (-event->x(), event->y(), 0 );
 			break;
 		case ( Qt::LeftButton ) :
 						if ( !mode )
@@ -230,13 +243,22 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 	if ( event->buttons() == Qt::RightButton )
 	{
 		current = Ogre::Vector3 ( -event->x(), event->y(), 0 );
-		mCamera->moveRelative ( ( current - moving ) /2 );
+		mCamera->moveRelative ((current-moving)*(mCamera->getPosition().z)/400 );
 		moving = current;
 	}
 	else if ( mode == 1 )
 	{
 		if ( !activeBrick ) activeBrick = newBrick();
-		activeBrick->setPosition ( transform ( event->x(), event->y() ) );
+		Ogre::Vector3 pos = transform ( event->x(), event->y());
+		if (discretePosition)
+		{
+			Ogre::Vector3 p;
+			p.x = 4*(int)(pos.x/4);
+			p.y = 4*(int)(pos.y/4);
+			p.z = 4*(int)(pos.z/4);
+			activeBrick->setPosition(p);
+		}
+		else activeBrick->setPosition(pos);
 	}
 	else if ( activeBrick && event->buttons() == Qt::LeftButton )
 	{
@@ -259,7 +281,16 @@ void OpekeView::mouseReleaseEvent ( QMouseEvent *event )
 				UndoAction *u = new UndoAction ( activeBrick, UndoAction::Build );
 				Bricks.append ( activeBrick );
 				activeBrick = newBrick();
-				activeBrick->setPosition ( transform ( event->x(), event->y() ) );
+				Ogre::Vector3 pos = transform ( event->x(), event->y());
+				if (discretePosition)
+				{
+					Ogre::Vector3 p;
+					p.x = 4*(int)(pos.x/4);
+					p.y = 4*(int)(pos.y/4);
+					p.z = 4*(int)(pos.z/4);
+					activeBrick->setPosition(p);
+				}
+				else activeBrick->setPosition(pos);
 
 				if ( undoList.isEmpty() ) emit undoEmpty ( false );
 				undoList.append ( u );
@@ -463,6 +494,7 @@ Brick* OpekeView::newBrick ( int type )
 	nodeCount++;
 	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
 	Ogre::Entity* activeEntity = 0;
+	mMaterialManager->create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General");
 
 	switch ( type )
 	{
@@ -485,8 +517,6 @@ Brick* OpekeView::newBrick ( int type )
 			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "block.mesh" );
 			break;
 	}
-
-	mMaterial = ( ( Ogre::MaterialPtr ) Ogre::MaterialManager::getSingleton().create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General" ) ).getPointer();
 	activeEntity->setMaterialName ( "Material" + Ogre::StringConverter::toString ( nodeCount ) );
 	activeNode->attachObject ( activeEntity );
 	Brick* mBrick = new Brick ( activeNode, activeEntity );
@@ -527,7 +557,7 @@ Brick* OpekeView::setSelect ( int x, int y )
 	Ogre::RaySceneQueryResult result = mRaySceneQuery->execute();
 
 	Ogre::MovableObject *closestObject = 0;
-	Ogre::Real closestDistance = 100000;
+	Ogre::Real closestDistance = 10000;
 
 	Ogre::RaySceneQueryResult::iterator rayIterator;
 
@@ -594,8 +624,9 @@ void OpekeView::settingsChanged()
 {
 	maxHeight = Settings::val_maxh();
 	bgColor = Settings::col_background();
+	discretePosition = Settings::val_discrete();
 
-	mViewport->setBackgroundColour ( Brick::toOgreColour ( bgColor ) );
+	if (mViewport) mViewport->setBackgroundColour ( Brick::toOgreColour ( bgColor ) );
 
 	update();
 	emit signalChangeStatusbar ( i18n ( "Settings changed" ) );
