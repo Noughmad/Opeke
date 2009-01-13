@@ -1,0 +1,34 @@
+<ui version="4.0" >
+ <class>prefs_build</class>
+ <widget class="QWidget" name="prefs_build" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <widget class="QCheckBox" name="kcfg_val_discrete" >
+   <property name="geometry" >
+    <rect>
+     <x>50</x>
+     <y>70</y>
+     <width>211</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="toolTip" >
+    <string>If checked, bricks you build will be placed onto an integer grid. Otherwise, they will be moved freely.</string>
+   </property>
+   <property name="text" >
+    <string>Discrete brick placement</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
