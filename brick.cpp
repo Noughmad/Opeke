@@ -83,7 +83,8 @@ void Brick::setColor ( Ogre::ColourValue c )
 	mColor =  c;
 	if ( !mMaterial ) mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
 	mMaterial->setAmbient ( c );
-	mMaterial->setDiffuse ( c*0.5 );
+	mMaterial->setDiffuse ( Ogre::ColourValue(c.r, c.g, c.b, c.a*0.5  ));
+	mMaterial->setSpecular(c);
 }
 
 QColor Brick::color()

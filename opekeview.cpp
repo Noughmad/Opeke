@@ -127,6 +127,9 @@ void OpekeView::setupOgre()
 		mViewport = mWindow->addViewport ( mCamera );
 		mSceneManager->destroyAllLights();
 		mLight = mSceneManager->createLight ( "MainLight" );
+		mLightNode = mSceneManager->getRootSceneNode()->createChildSceneNode("LightNode");
+		mLightNode->attachObject(mLight);
+		mLightNode->attachObject(mCamera);
 	}
 	catch ( Ogre::Exception& e )
 	{
@@ -137,20 +140,20 @@ void OpekeView::setupOgre()
 
 void OpekeView::setupScene()
 {
-	mSceneManager->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+	mSceneManager->setAmbientLight(Ogre::ColourValue(0.2, 0.2, 0.2));
 	mCamera->setPosition ( Ogre::Vector3 ( 0.0f, -200.0f, 100.0f ) );
 	mCamera->lookAt ( Ogre::Vector3 ( 0.0f,0.0f,0.0f ) );
 	mCamera->setNearClipDistance ( 5.0f );
 	mCamera->setFarClipDistance ( 5000.0f );
-//	mViewport->setBackgroundColour ( Brick::toOgreColour(bgColor) );
+	mViewport->setBackgroundColour ( Brick::toOgreColour(bgColor) );
 	mCamera->setAspectRatio ( Ogre::Real ( mViewport->getActualWidth() ) /Ogre::Real ( mViewport->getActualHeight() ) );
 	mCamera->setAutoAspectRatio ( true );
 	mCamera->setFixedYawAxis ( false );
 
 	mLight->setVisible(true);
 	mLight->setType(Ogre::Light::LT_DIRECTIONAL);
-	mLight->setPosition ( 0,-200,100 );
-	mLight->setDirection(0,-1,1);
+	mLight->setPosition ( 0,0,0 );
+	mLight->setDirection(0,10,-10);
 	mLight->setDiffuseColour ( 1.0, 1.0, 1.0 );
 	mLight->setSpecularColour ( 0.5, 0.5, 0.5 );
 
@@ -158,7 +161,7 @@ void OpekeView::setupScene()
 	mMaterial = mMaterialManager->getDefaultSettings().getPointer();
 
 	mMaterial->setSelfIllumination(0.0, 0.0, 0.0);
-	mMaterial->setAmbient ( 1.0, 1.0, 1.0 );
+	mMaterial->setAmbient ( 0.5, 0.5, 0.5 );
 	mMaterial->setDiffuse ( 1.0, 1.0, 1.0, 1.0 );
 	mMaterial->setSpecular ( 0.3, 0.3, 0.3, 1.0 );
 
@@ -170,7 +173,6 @@ void OpekeView::setupScene()
 void OpekeView::update()
 {	
 	if ( mWindow ) mWindow->update();
-	//if(mRoot) mRoot->renderOneFrame();
 }
 
 void OpekeView::resizeEvent ( QResizeEvent* e )
@@ -243,7 +245,7 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 	if ( event->buttons() == Qt::RightButton )
 	{
 		current = Ogre::Vector3 ( -event->x(), event->y(), 0 );
-		mCamera->moveRelative ((current-moving)*(mCamera->getPosition().z)/400 );
+		mLightNode->translate(mLightNode->getLocalAxes(), (current-moving)*(mCamera->getPosition().z)/400 );
 		moving = current;
 	}
 	else if ( mode == 1 )
@@ -320,6 +322,13 @@ void OpekeView::mouseReleaseEvent ( QMouseEvent *event )
 
 void OpekeView::keyPressEvent ( QKeyEvent* event )
 {
+	
+	/**
+	 * Always move the Light with the Camera
+	 * 
+	 * TODO:
+	 * Fix what happens when the LightNode is not pointed to the (0,0,0)
+	 */
 	float mod = 10.0;
 	if ( event->isAutoRepeat() ) mod *= 2;
 	else preMovePos = activeBrick->position();
@@ -329,45 +338,52 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 		switch ( event->key() )
 		{
 			case ( Qt::Key_Up ) :
-							mCamera->pitch ( Ogre::Radian ( -mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3 ( 0, -mod, 0 ) );
 				break;
 
 			case ( Qt::Key_Down ) :
-							mCamera->pitch ( Ogre::Radian ( mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3 ( 0, mod, 0 ) );
+
 				break;
 
 			case ( Qt::Key_Left ) :
-							mCamera->yaw ( Ogre::Radian ( -mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3 ( mod, 0, 0 ) );
 				break;
 
 			case ( Qt::Key_Right ) :
-							mCamera->yaw ( Ogre::Radian ( mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3 ( -mod, 0, 0 ) );
 				break;
-
+				
 			default:
 				event->ignore();
 				break;
 		}
 	}
 	else if ( event->modifiers() == Qt::ShiftModifier )
-{
+	{
+		Ogre::Real distance = mLightNode->getPosition().length();			
 		switch ( event->key() )
 		{
 			case ( Qt::Key_Up ) :
-							mCamera->moveRelative ( Ogre::Vector3 ( 0, 0, mod*2 ) );
+							mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*2 ) );
 				break;
 
 			case ( Qt::Key_Down ) :
-							mCamera->moveRelative ( Ogre::Vector3 ( 0, 0, -mod*2 ) );
+							mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, -mod*2 ) );
 				break;
 
 			case ( Qt::Key_Left ) :
-							mCamera->roll ( Ogre::Radian ( -mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
+				mLightNode->yaw(Ogre::Radian ( mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
 				break;
 
 			case ( Qt::Key_Right ) :
-							mCamera->roll ( Ogre::Radian ( +mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
+				mLightNode->yaw(Ogre::Radian ( -mod/400 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
 				break;
+				
 			default:
 				event->ignore();
 				break;
@@ -375,48 +391,52 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 	}
 	else
 {
-		if ( mode || selected < 0 )
+		if ( mode || !activeBrick )
 		{
+			Ogre::Real distance = mLightNode->getPosition().length();			
 			switch ( event->key() )
 			{
 				case ( Qt::Key_Up ) :
-								mCamera->moveRelative ( Ogre::Vector3 ( 0, -mod, 0 ) );
+					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
+					mLightNode->pitch(Ogre::Radian ( -mod/400 ) );
+					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
 					break;
 
 				case ( Qt::Key_Down ) :
-								mCamera->moveRelative ( Ogre::Vector3 ( 0, mod, 0 ) );
+					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
+					mLightNode->pitch(Ogre::Radian ( mod/400 ) );
+					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
 					break;
-
+					
 				case ( Qt::Key_Left ) :
-								mCamera->moveRelative ( Ogre::Vector3 ( mod, 0, 0 ) );
+					mLightNode->roll(Ogre::Radian ( -mod/400 ) );
 					break;
 
 				case ( Qt::Key_Right ) :
-								mCamera->moveRelative ( Ogre::Vector3 ( -mod, 0, 0 ) );
+					mLightNode->roll(Ogre::Radian ( mod/400 ) );
 					break;
 
 				case ( Qt::Key_2 ) :
-								mCamera->moveRelative ( Ogre::Vector3 ( 0, 0, -mod*2 ) );
+								mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, -mod*2 ) );
 					break;
 
 				case ( Qt::Key_8 ) :
-								mCamera->moveRelative ( Ogre::Vector3 ( 0, 0, mod*1 ) );
+								mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*1 ) );
 					break;
 
 				case ( Qt::Key_4 ) :
-								mCamera->roll ( Ogre::Radian ( -mod/400 ) );
+								mLightNode->roll ( Ogre::Radian ( -mod/400 ) );
 					break;
 
 				case ( Qt::Key_6 ) :
-								mCamera->roll ( Ogre::Radian ( mod/400 ) );
+								mLightNode->roll ( Ogre::Radian ( mod/400 ) );
 					break;
 				default:
 					event->ignore();
 					break;
 			}
 		}
-		else if ( currentBrick )
-{
+		else
 			switch ( event->key() )
 			{
 				case ( Qt::Key_Up ) :
@@ -450,7 +470,6 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 					event->ignore();
 					break;
 			}
-		}
 	}
 	update();
 }
@@ -491,9 +510,10 @@ void OpekeView::wheelEvent ( QWheelEvent *event )
 
 Brick* OpekeView::newBrick ( int type )
 {
+	kDebug() << type;
 	nodeCount++;
 	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
-	Ogre::Entity* activeEntity = 0;
+	Ogre::Entity* activeEntity;
 	mMaterialManager->create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General");
 
 	switch ( type )
@@ -520,6 +540,7 @@ Brick* OpekeView::newBrick ( int type )
 	activeEntity->setMaterialName ( "Material" + Ogre::StringConverter::toString ( nodeCount ) );
 	activeNode->attachObject ( activeEntity );
 	Brick* mBrick = new Brick ( activeNode, activeEntity );
+	mBrick->setType(type);
 	mBrick->setColor ( mColor );
 	mBrick->setSize ( mSize );
 	return mBrick;
@@ -637,6 +658,10 @@ void OpekeView::viewColor ( QColor signaled_color )
 	if ( activeBrick )
 	{
 		activeBrick->setColor ( signaled_color );
+	}
+	if (mode == 1)
+	{
+		mColor = Brick::toOgreColour(signaled_color);
 	}
 	update();
 }
@@ -805,23 +830,22 @@ void OpekeView::sendOrientation()
 
 void OpekeView::openBricks ( QFile* file )
 {
-	newScene();
-	QList<Brick*> inBricks;
 	QDataStream in ( file );
 	QString fileVersion, program;
-	in>>program>>fileVersion;
+	in >> program >> fileVersion;
 	if ( program != "Opeke" )
 	{
 		KMessageBox::error ( this, i18n ( "The file you're trying to open is not a recongniseable Opeke file." ) );
 		return;
 	}
+	
+	kDebug() << "File version is " << fileVersion;
 
 	if ( fileVersion == "0.1" )
 	{
 		while ( !in.atEnd() )
 		{
-			Brick* br = newBrick();
-			br->setType ( Brick::Block );
+			Brick* br = newBrick(Brick::Block);
 			Ogre::Vector3 inPos[8], tPos = Ogre::Vector3 ( 0, 0, 0 );
 			for ( int m = 0; m < 8; m++ )
 			{
@@ -835,7 +859,7 @@ void OpekeView::openBricks ( QFile* file )
 			in>>tColor;
 			br->setColor ( tColor );
 			br->setSize ( inPos[2] - inPos[4] );
-			inBricks.append ( br );
+			Bricks.append ( br );
 		}
 	}
 	else if ( fileVersion == "0.2" )
@@ -865,7 +889,7 @@ void OpekeView::openBricks ( QFile* file )
 			in>>tColor;
 			br->setColor ( tColor );
 
-			inBricks.append ( br );
+			Bricks.append ( br );
 		}
 	}
 	else if ( fileVersion == "0.3" )
@@ -892,7 +916,7 @@ void OpekeView::openBricks ( QFile* file )
 			in>>color;
 			br->setColor ( color );
 
-			inBricks.append ( br );
+			Bricks.append ( br );
 		}
 	}
 	else if ( fileVersion == "0.4" )
@@ -903,6 +927,7 @@ void OpekeView::openBricks ( QFile* file )
 		Brick* oBrick;
 		while ( !in.atEnd() )
 		{
+			kDebug() << "Loading a brick";
 			in >> oType;
 			in >> oPos.x >> oPos.y >> oPos.z;
 			in >> oSize.x >> oSize.y >> oSize.z;
@@ -920,8 +945,6 @@ void OpekeView::openBricks ( QFile* file )
 		KMessageBox::error ( this, i18n ( "This file was made by an unknown Opeke version." ) );
 		return;
 	}
-	newScene();
-	Bricks = inBricks;
 	update();
 }
 
@@ -930,6 +953,8 @@ void OpekeView::saveBricks ( KSaveFile* file )
 	/**
 	 * TODO: Save Bricks into the file
 	 */
+	
+	kDebug() << "Saving file";
 	
 	QDataStream output ( file );
 	QString program = "Opeke", fileVersion = VERSION;
@@ -942,8 +967,8 @@ void OpekeView::saveBricks ( KSaveFile* file )
 			sSize = b->size();
 			sPos = b->position();
 			output << b->type();
-			output << sSize.x << sSize.y << sSize.z;
 			output << sPos.x << sPos.y << sPos.z;
+			output << sSize.x << sSize.y << sSize.z;
 			output << b->color() << b->orientation();
 		}
 	}

@@ -251,6 +251,7 @@ void Opeke::openFile(const QString &inputFileName)
 	QString tmpFile;
 	if ( KIO::NetAccess::download (inputFileName, tmpFile, this ) )
 	{
+		emit clear();
 		fileName = inputFileName;
 		QFile* file  = new QFile (tmpFile);
 		file->open ( QIODevice::ReadOnly );
