@@ -330,10 +330,13 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 	 * 
 	 * TODO:
 	 * Fix what happens when the LightNode is not pointed to the (0,0,0)
+	 * 
+	 * DO NOT TRY TO ROTATE THE SCENE
+	 * ROTATE THE LIGHT AND CAMERA (mLightNode) ONLY 
 	 */
 	float mod = 10.0;
 	if ( event->isAutoRepeat() ) mod *= 2;
-	else preMovePos = activeBrick->position();
+	else if (activeBrick) preMovePos = activeBrick->position();
 
 	if ( event->modifiers() == Qt::ControlModifier )
 	{
@@ -363,6 +366,8 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 	}
 	else if ( event->modifiers() == Qt::ShiftModifier )
 	{
+		Ogre::Vector3 tPos = mLightNode->getPosition();
+		Ogre::Quaternion tRot = (-tPos).getRotationTo(Ogre::Vector3(0,0,0));
 		switch ( event->key() )
 		{
 			case ( Qt::Key_Up ) :
@@ -372,44 +377,73 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 			case ( Qt::Key_Down ) :
 				mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, -mod*2 ) );
 				break;
-
+				
 			case ( Qt::Key_Left ) :
-				mCenterNode->yaw(Ogre::Radian ( -mod/400 ) );
+					
+				mLightNode->yaw(Ogre::Radian (-mod/400));
 				break;
 
 			case ( Qt::Key_Right ) :
-				mCenterNode->yaw(Ogre::Radian ( mod/400 ) );
+				mLightNode->yaw( Ogre::Radian (mod/400));
 				break;
-				
+
 			default:
 				event->ignore();
 				break;
 		}
 	}
 	else
-{
+	{
+		/**
+		 * TODO:
+		 * Fix this if the camera doesn't poith towards 0,0,0.
+		 * There must be a way.
+		 */
+		Ogre::Vector3 tPos = -mLightNode->getPosition();
+		Ogre::Quaternion tRot = mCamera->getDirection().getRotationTo(tPos);
 		if ( mode || !activeBrick )
 		{
 			switch ( event->key() )
 			{
 				case ( Qt::Key_Up ) :
-					mCenterNode->pitch(Ogre::Radian ( mod/400 ) );
+					mLightNode->rotate(tRot, Ogre::Node::TS_LOCAL);
+					mLightNode->setPosition(Ogre::Vector3(0,0,0));
+					mLightNode->pitch(Ogre::Radian ( mod/400 ), Ogre::Node::TS_LOCAL);
+					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL); 
+					mLightNode->rotate(tRot.Inverse(), Ogre::Node::TS_LOCAL);
+				//	mCenterNode->rotate(mLightNode->getOrientation().xAxis(), Ogre::Radian (mod/400));
+				//	mCenterNode->pitch(Ogre::Radian ( mod/400 ) );
 					break;
 
 				case ( Qt::Key_Down ) :
-					mCenterNode->pitch(Ogre::Radian ( -mod/400 ) );
+					mLightNode->rotate(tRot);
+					mLightNode->setPosition(Ogre::Vector3(0,0,0));
+					mLightNode->pitch(Ogre::Radian ( -mod/400 ), Ogre::Node::TS_LOCAL);
+					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL);
+					mLightNode->rotate(tRot.Inverse());
+				//	mCenterNode->rotate(mLightNode->getOrientation().xAxis(), Ogre::Radian (-mod/400));
+				//	mCenterNode->pitch(Ogre::Radian ( -mod/400 ) );
 					break;
 					
+					
 				case ( Qt::Key_Left ) :
-					mCenterNode->roll(Ogre::Radian ( -mod/400 ) );
+					mLightNode->rotate(tRot);
+					mLightNode->translate(Ogre::Vector3(0,0,-tPos.length()), Ogre::Node::TS_LOCAL );
+					mLightNode->roll(Ogre::Radian ( mod/400 ), Ogre::Node::TS_LOCAL);
+					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL);
+					mLightNode->rotate(tRot.Inverse());
 					break;
 
 				case ( Qt::Key_Right ) :
-					mCenterNode->roll(Ogre::Radian ( mod/400 ) );
+					mLightNode->rotate(tRot);
+					mLightNode->setPosition(Ogre::Vector3(0,0,0));
+					mLightNode->roll(Ogre::Radian ( -mod/400 ), Ogre::Node::TS_LOCAL);
+					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL);
+					mLightNode->rotate(tRot.Inverse());
 					break;
-
+				
 				case ( Qt::Key_2 ) :
-								mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, -mod*2 ) );
+					mLightNode->translate(Ogre::Vector3 ( 0, 0, -mod*2 ), Ogre::Node::TS_LOCAL );
 					break;
 
 				case ( Qt::Key_8 ) :
@@ -433,28 +467,28 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 			{
 				case ( Qt::Key_Up ) :
 
-								activeBrick->move ( 0, 1.0, 0 );
+					activeBrick->move ( 0, 1.0, 0 );
 					uMove.y = 1.0;
 					break;
 				case ( Qt::Key_Down ) :
-								activeBrick->move ( 0, -1.0, 0 );
+					activeBrick->move ( 0, -1.0, 0 );
 					uMove.y = -1.0;
 					break;
 				case ( Qt::Key_Left ) :
-								activeBrick->move ( -1.0, 0, 0 );
+					activeBrick->move ( -1.0, 0, 0 );
 					uMove.x = -1.0;
 					break;
 				case ( Qt::Key_Right ) :
-								activeBrick->move ( 1.0, 0, 0 );
+					activeBrick->move ( 1.0, 0, 0 );
 					uMove.x = 1.0;
 					break;
 				case ( Qt::Key_8 ) :
-								activeBrick->move ( 0, 0, 1.0 );
+					activeBrick->move ( 0, 0, 1.0 );
 					uMove.z = 1.0;
 					emit planeChanged ( planeZ + 1 );
 					break;
 				case ( Qt::Key_2 ) :
-								activeBrick->move ( 0, 0, -1.0 );
+					activeBrick->move ( 0, 0, -1.0 );
 					uMove.z = -1.0;
 					emit planeChanged ( planeZ - 1 );
 					break;

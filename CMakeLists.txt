@@ -26,7 +26,7 @@ set(opeke_SRCS
 
 kde4_add_ui_files(opeke_SRCS opeketool_base.ui opekeview_base.ui prefs_base.ui prefs_build.ui)
 
-kde4_add_kcfg_files(opeke_SRCS GENERATE_MOC settings.kcfgc )
+kde4_add_kcfg_files(opeke_SRCS settings.kcfgc )
 
 kde4_add_executable(opeke ${opeke_SRCS})
 

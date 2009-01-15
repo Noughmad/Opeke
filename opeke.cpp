@@ -80,7 +80,7 @@ Opeke::Opeke()
 	
 	setupGUI();
 	
-	
+	setWindowModified(false);
 	setCaption(QString::null, false);
 }
 
