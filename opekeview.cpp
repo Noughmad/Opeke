@@ -60,6 +60,7 @@ OpekeView::OpekeView ( QWidget * )
 	mCamera = 0;
 	mViewport = 0;
 	mMaterialManager = 0;
+	mCenterNode = 0;
 
 	mode = 1;
 
@@ -127,6 +128,7 @@ void OpekeView::setupOgre()
 		mViewport = mWindow->addViewport ( mCamera );
 		mSceneManager->destroyAllLights();
 		mLight = mSceneManager->createLight ( "MainLight" );
+		mCenterNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CenterNode");
 		mLightNode = mSceneManager->getRootSceneNode()->createChildSceneNode("LightNode");
 		mLightNode->attachObject(mLight);
 		mLightNode->attachObject(mCamera);
@@ -361,27 +363,22 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 	}
 	else if ( event->modifiers() == Qt::ShiftModifier )
 	{
-		Ogre::Real distance = mLightNode->getPosition().length();			
 		switch ( event->key() )
 		{
 			case ( Qt::Key_Up ) :
-							mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*2 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*2 ) );
 				break;
 
 			case ( Qt::Key_Down ) :
-							mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, -mod*2 ) );
+				mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, -mod*2 ) );
 				break;
 
 			case ( Qt::Key_Left ) :
-				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
-				mLightNode->yaw(Ogre::Radian ( mod/400 ) );
-				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
+				mCenterNode->yaw(Ogre::Radian ( -mod/400 ) );
 				break;
 
 			case ( Qt::Key_Right ) :
-				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
-				mLightNode->yaw(Ogre::Radian ( -mod/400 ) );
-				mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
+				mCenterNode->yaw(Ogre::Radian ( mod/400 ) );
 				break;
 				
 			default:
@@ -393,27 +390,22 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 {
 		if ( mode || !activeBrick )
 		{
-			Ogre::Real distance = mLightNode->getPosition().length();			
 			switch ( event->key() )
 			{
 				case ( Qt::Key_Up ) :
-					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
-					mLightNode->pitch(Ogre::Radian ( -mod/400 ) );
-					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
+					mCenterNode->pitch(Ogre::Radian ( mod/400 ) );
 					break;
 
 				case ( Qt::Key_Down ) :
-					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,-distance));
-					mLightNode->pitch(Ogre::Radian ( mod/400 ) );
-					mLightNode->translate(mLightNode->getLocalAxes(), Ogre::Vector3(0,0,distance));
+					mCenterNode->pitch(Ogre::Radian ( -mod/400 ) );
 					break;
 					
 				case ( Qt::Key_Left ) :
-					mLightNode->roll(Ogre::Radian ( -mod/400 ) );
+					mCenterNode->roll(Ogre::Radian ( -mod/400 ) );
 					break;
 
 				case ( Qt::Key_Right ) :
-					mLightNode->roll(Ogre::Radian ( mod/400 ) );
+					mCenterNode->roll(Ogre::Radian ( mod/400 ) );
 					break;
 
 				case ( Qt::Key_2 ) :
@@ -512,7 +504,7 @@ Brick* OpekeView::newBrick ( int type )
 {
 	kDebug() << type;
 	nodeCount++;
-	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
+	Ogre::SceneNode* activeNode = mCenterNode->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
 	Ogre::Entity* activeEntity;
 	mMaterialManager->create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General");
 

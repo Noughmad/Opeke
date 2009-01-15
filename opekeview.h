@@ -111,6 +111,7 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		Ogre::Light* mLight;
 		Ogre::Material* mMaterial;
 		Ogre::SceneNode* mLightNode;
+		Ogre::SceneNode* mCenterNode;
 
 	private:
 
