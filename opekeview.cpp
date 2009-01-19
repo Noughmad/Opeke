@@ -60,7 +60,6 @@ OpekeView::OpekeView ( QWidget * )
 	mCamera = 0;
 	mViewport = 0;
 	mMaterialManager = 0;
-	mCenterNode = 0;
 
 	mode = 1;
 
@@ -128,7 +127,6 @@ void OpekeView::setupOgre()
 		mViewport = mWindow->addViewport ( mCamera );
 		mSceneManager->destroyAllLights();
 		mLight = mSceneManager->createLight ( "MainLight" );
-		mCenterNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CenterNode");
 		mLightNode = mSceneManager->getRootSceneNode()->createChildSceneNode("LightNode");
 		mLightNode->attachObject(mLight);
 		mLightNode->attachObject(mCamera);
@@ -143,19 +141,19 @@ void OpekeView::setupOgre()
 void OpekeView::setupScene()
 {
 	mSceneManager->setAmbientLight(Ogre::ColourValue(0.2, 0.2, 0.2));
-	mCamera->setPosition ( Ogre::Vector3 ( 0.0f, -200.0f, 100.0f ) );
-	mCamera->lookAt ( Ogre::Vector3 ( 0.0f,0.0f,0.0f ) );
+	mLightNode->setPosition ( Ogre::Vector3 ( 0.0f, -200.0f, 100.0f ) );
+	mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
 	mCamera->setNearClipDistance ( 5.0f );
 	mCamera->setFarClipDistance ( 5000.0f );
 	mViewport->setBackgroundColour ( Brick::toOgreColour(bgColor) );
 	mCamera->setAspectRatio ( Ogre::Real ( mViewport->getActualWidth() ) /Ogre::Real ( mViewport->getActualHeight() ) );
 	mCamera->setAutoAspectRatio ( true );
-	mCamera->setFixedYawAxis ( false );
+	mLightNode->setFixedYawAxis ( false );
 
 	mLight->setVisible(true);
 	mLight->setType(Ogre::Light::LT_DIRECTIONAL);
 	mLight->setPosition ( 0,0,0 );
-	mLight->setDirection(0,10,-10);
+	mLight->setDirection(0,0,-1);
 	mLight->setDiffuseColour ( 1.0, 1.0, 1.0 );
 	mLight->setSpecularColour ( 0.5, 0.5, 0.5 );
 
@@ -247,7 +245,7 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 	if ( event->buttons() == Qt::RightButton )
 	{
 		current = Ogre::Vector3 ( -event->x(), event->y(), 0 );
-		mLightNode->translate(mLightNode->getLocalAxes(), (current-moving)*(mCamera->getPosition().z)/400 );
+		mLightNode->translate((current-moving));
 		moving = current;
 	}
 	else if ( mode == 1 )
@@ -259,6 +257,7 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 			Ogre::Vector3 p;
 			p.x = 4*(int)(pos.x/4);
 			p.y = 4*(int)(pos.y/4);
+			p.x = 4*(int)(pos.x/4);
 			p.z = 4*(int)(pos.z/4);
 			activeBrick->setPosition(p);
 		}
@@ -400,46 +399,49 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 		 * There must be a way.
 		 */
 		Ogre::Vector3 tPos = -mLightNode->getPosition();
-		Ogre::Quaternion tRot = mCamera->getDirection().getRotationTo(tPos);
+		Ogre::Real distance = tPos.length();
+		Ogre::Quaternion qOr = mLightNode->getOrientation();
 		if ( mode || !activeBrick )
 		{
 			switch ( event->key() )
 			{
 				case ( Qt::Key_Up ) :
-					mLightNode->rotate(tRot, Ogre::Node::TS_LOCAL);
-					mLightNode->setPosition(Ogre::Vector3(0,0,0));
-					mLightNode->pitch(Ogre::Radian ( mod/400 ), Ogre::Node::TS_LOCAL);
-					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL); 
-					mLightNode->rotate(tRot.Inverse(), Ogre::Node::TS_LOCAL);
-				//	mCenterNode->rotate(mLightNode->getOrientation().xAxis(), Ogre::Radian (mod/400));
-				//	mCenterNode->pitch(Ogre::Radian ( mod/400 ) );
+					kDebug() << tPos.distance(Ogre::Vector3(0,0,0));
+					mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
+					mLightNode->translate(Ogre::Vector3(0,0,distance), Ogre::Node::TS_LOCAL); 
+					mLightNode->pitch(Ogre::Radian ( mod/400 ));
+					mLightNode->translate(Ogre::Vector3(0,0,-distance*400.0/399.0), Ogre::Node::TS_LOCAL); 
+					mLightNode->setOrientation(qOr);
+					mLightNode->pitch(Ogre::Radian(-mod/399));
+					kDebug() << tPos.distance(Ogre::Vector3(0,0,0));
 					break;
 
 				case ( Qt::Key_Down ) :
-					mLightNode->rotate(tRot);
-					mLightNode->setPosition(Ogre::Vector3(0,0,0));
-					mLightNode->pitch(Ogre::Radian ( -mod/400 ), Ogre::Node::TS_LOCAL);
-					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL);
-					mLightNode->rotate(tRot.Inverse());
-				//	mCenterNode->rotate(mLightNode->getOrientation().xAxis(), Ogre::Radian (-mod/400));
-				//	mCenterNode->pitch(Ogre::Radian ( -mod/400 ) );
+					mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
+					mLightNode->translate(Ogre::Vector3(0,0,distance), Ogre::Node::TS_LOCAL); 
+					mLightNode->pitch(Ogre::Radian ( -mod/400 ));
+					mLightNode->translate(Ogre::Vector3(0,0,-distance*400.0/399.0), Ogre::Node::TS_LOCAL); 
+					mLightNode->setOrientation(qOr);
+					mLightNode->pitch(Ogre::Radian(mod/399));
 					break;
 					
 					
 				case ( Qt::Key_Left ) :
-					mLightNode->rotate(tRot);
-					mLightNode->translate(Ogre::Vector3(0,0,-tPos.length()), Ogre::Node::TS_LOCAL );
-					mLightNode->roll(Ogre::Radian ( mod/400 ), Ogre::Node::TS_LOCAL);
-					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL);
-					mLightNode->rotate(tRot.Inverse());
+					mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
+					mLightNode->translate(Ogre::Vector3(0,0,distance), Ogre::Node::TS_LOCAL); 
+					mLightNode->yaw(Ogre::Radian ( mod/400 ));
+					mLightNode->translate(Ogre::Vector3(0,0,-distance*400.0/399.0), Ogre::Node::TS_LOCAL); 
+					mLightNode->setOrientation(qOr);
+					mLightNode->yaw(Ogre::Radian(-mod/399));
 					break;
 
 				case ( Qt::Key_Right ) :
-					mLightNode->rotate(tRot);
-					mLightNode->setPosition(Ogre::Vector3(0,0,0));
-					mLightNode->roll(Ogre::Radian ( -mod/400 ), Ogre::Node::TS_LOCAL);
-					mLightNode->translate(Ogre::Vector3(0,0,tPos.length()), Ogre::Node::TS_LOCAL);
-					mLightNode->rotate(tRot.Inverse());
+					mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
+					mLightNode->translate(Ogre::Vector3(0,0,distance), Ogre::Node::TS_LOCAL); 
+					mLightNode->yaw(Ogre::Radian ( -mod/400 ));
+					mLightNode->translate(Ogre::Vector3(0,0,-distance*400.0/399.0), Ogre::Node::TS_LOCAL); 
+					mLightNode->setOrientation(qOr);
+					mLightNode->yaw(Ogre::Radian(+mod/399));
 					break;
 				
 				case ( Qt::Key_2 ) :
@@ -447,15 +449,15 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 					break;
 
 				case ( Qt::Key_8 ) :
-								mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*1 ) );
+					mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*1 ) );
 					break;
 
 				case ( Qt::Key_4 ) :
-								mLightNode->roll ( Ogre::Radian ( -mod/400 ) );
+					mLightNode->roll ( Ogre::Radian ( -mod/400 ) );
 					break;
 
 				case ( Qt::Key_6 ) :
-								mLightNode->roll ( Ogre::Radian ( mod/400 ) );
+					mLightNode->roll ( Ogre::Radian ( mod/400 ) );
 					break;
 				default:
 					event->ignore();
@@ -538,7 +540,7 @@ Brick* OpekeView::newBrick ( int type )
 {
 	kDebug() << type;
 	nodeCount++;
-	Ogre::SceneNode* activeNode = mCenterNode->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
+	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
 	Ogre::Entity* activeEntity;
 	mMaterialManager->create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General");
 
