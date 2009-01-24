@@ -33,7 +33,11 @@ class Brick
 		Brick(Ogre::SceneNode* node, Ogre::Entity* entity);
 		virtual ~Brick();
 		
-		enum BrickType {Block, Roof, Cylinder, InvertedCylinder, Sphere};
+		/**
+		 * Always make sure to only append to this list, not insert into it, for compatibility
+		 */
+		
+		enum BrickType {Block, Roof, Cylinder, InvertedCylinder, Sphere, Cone, CornerRoof, Pyramid, InvertedRoofCorner};
 		
 		void setNode(Ogre::SceneNode* n);
 		Ogre::SceneNode* node();
@@ -44,8 +48,8 @@ class Brick
 		void setType(int t);
 		int type();
 		
-		void setOrientation(int o);
-		int orientation();
+		void setOrientation(Ogre::Quaternion o);
+		Ogre::Quaternion orientation();
 		
 		void setColor(QColor c);
 		void setColor(Ogre::ColourValue c);
@@ -91,7 +95,7 @@ class Brick
 		Ogre::SceneNode* mNode;
 		Ogre::Material* mMaterial;
 		int mType;
-		int mOrientation;
+		Ogre::Quaternion mOrientation;
 		Ogre::Vector3 mSize;
 		Ogre::ColourValue mColor;
 		bool mSelected;

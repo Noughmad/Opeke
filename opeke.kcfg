@@ -7,7 +7,7 @@
   <group name="Preferences">
     <entry name="col_background" type="Color">
 	    <label>Color of the background</label>
-	    <default>black</default>
+	    <default>#a0a0a0</default>
     </entry>
     <entry name="val_maxh" type="Int">
 	    <label>Maximum height of a building</label>
@@ -16,7 +16,27 @@
     <entry name="val_discrete" type="Bool">
 	<label>Whether to place bricks on an integer grid or not</label>
 	<default>true</default>
-</entry>
+	</entry>
+	
+	<entry name="val_ambient" type="Double">
+	<label>Ambient value of the main light</label>
+	<default>0.4</default>
+	</entry>
+	
+	<entry name="val_diffuse" type="Double">
+	<label>Diffuse value of the main light</label>
+	<default>1.0</default>
+	</entry>
+	
+	<entry name="val_specular" type="Double">
+	<label>Specular value of the main light</label>
+	<default>0.2</default>
+	</entry>
+	
+	<entry name="val_light" type="Double">
+	<label>Toggle whether advanced light settings are enabled</label>
+	<default>false</default>
+	</entry>
     
   </group>
   <group name="MainWindow">

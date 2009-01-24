@@ -1,10 +1,11 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Opeke
+MimeType=application/x-opeke
 Exec=opeke %i -caption "%c"
 Icon=Opeke
 Type=Application
-DocPath=opeke/opeke.html
-GenericName=A KDE Brick Building Application
+DocPath=opeke/index.html
+Categories=Qt;KDE;Graphics;
+GenericName=Brick Building
 Terminal=0
-

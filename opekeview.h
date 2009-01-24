@@ -134,6 +134,7 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 
 		Ogre::Vector3 transform ( int x, int y );
 		Ogre::Vector3 moving, current;
+		Ogre::Quaternion mOrientation;
 		bool mouseDown;
 		QString fileName;
 		QColor bgColor;
@@ -163,8 +164,6 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		void delEnable ( bool enable );
 		void planeChanged ( int z );
 		void modified();
-		void getOrientationFromTool();
-		void signalOrientation ( Ogre::Quaternion signaledOrientation );
 
 	private slots:
 		void newScene();
@@ -189,11 +188,16 @@ class OpekeView : public QWidget, public Ui::opekeview_base
 		void changeTypeCylinder();
 		void changeTypeInvCyl();
 		void changeTypeSphere();
-		void changeOrientation ( int changedOrientation );
+		void changeTypeCone();
+		void changeTypeCorner();
+		void changeTypePyramid();
+		void changeTypeInvCorner();
+
+		void flipGridEnabled();
+		void changeOrientation ( Ogre::Quaternion changedOrientation );
 		void rotateX();
 		void rotateY();
 		void rotateZ();
-		void sendOrientation();
 };
 
 #endif // OpekeVIEW_H

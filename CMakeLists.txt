@@ -24,7 +24,7 @@ set(opeke_SRCS
 	undoaction.cpp
 	)
 
-kde4_add_ui_files(opeke_SRCS opeketool_base.ui opekeview_base.ui prefs_base.ui prefs_build.ui)
+kde4_add_ui_files(opeke_SRCS opekeview_base.ui prefs_base.ui prefs_build.ui)
 
 kde4_add_kcfg_files(opeke_SRCS settings.kcfgc )
 
@@ -40,6 +40,6 @@ install(TARGETS opeke DESTINATION ${BIN_INSTALL_DIR} )
 install( FILES opeke.desktop  DESTINATION  ${XDG_APPS_INSTALL_DIR} )
 install( FILES opeke.kcfg  DESTINATION  ${KCFG_INSTALL_DIR} )
 install( FILES plugins.cfg resources.cfg  DESTINATION  ${DATA_INSTALL_DIR}/opeke )
-install( FILES block.mesh roof.mesh	sphere.mesh	cylinder.mesh invcyl.mesh DESTINATION  ${DATA_INSTALL_DIR}/opeke )
+install( FILES block.mesh roof.mesh sphere.mesh cylinder.mesh invcyl.mesh cone.mesh corner.mesh pyramid.mesh invrcor.mesh DESTINATION  ${DATA_INSTALL_DIR}/opeke )
 install( FILES opekeui.rc  DESTINATION  ${DATA_INSTALL_DIR}/opeke )
 

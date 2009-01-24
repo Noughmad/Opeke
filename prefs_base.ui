@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
-    <height>555</height>
+    <width>376</width>
+    <height>255</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -20,6 +20,9 @@
      </property>
      <property name="wordWrap" >
       <bool>false</bool>
+     </property>
+     <property name="buddy" >
+      <cstring>kcfg_col_background</cstring>
      </property>
     </widget>
    </item>
@@ -55,19 +58,6 @@ p, li { white-space: pre-wrap; }
      </property>
     </spacer>
    </item>
-   <item row="1" column="0" >
-    <widget class="QLabel" name="textLabel1" >
-     <property name="text" >
-      <string>Maximum height</string>
-     </property>
-     <property name="wordWrap" >
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1" >
-    <widget class="KIntSpinBox" name="kcfg_val_maxh" />
-   </item>
    <item row="1" column="2" >
     <spacer>
      <property name="orientation" >
@@ -84,6 +74,116 @@ p, li { white-space: pre-wrap; }
      </property>
     </spacer>
    </item>
+   <item row="8" column="2" >
+    <spacer name="verticalSpacer" >
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0" >
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" >
+    <widget class="QCheckBox" name="kcfg_val_light" >
+     <property name="text" >
+      <string>Advanced Light Settings</string>
+     </property>
+     <property name="checked" >
+      <bool>false</bool>
+     </property>
+     <property name="tristate" >
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="2" >
+    <widget class="QGroupBox" name="lightSettings" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Preferred" hsizetype="MinimumExpanding" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title" >
+      <string>Light Settings</string>
+     </property>
+     <property name="flat" >
+      <bool>false</bool>
+     </property>
+     <property name="checkable" >
+      <bool>false</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout" >
+      <item row="0" column="1" >
+       <widget class="KDoubleNumInput" name="kcfg_val_ambient" >
+        <property name="value" >
+         <double>0.500000000000000</double>
+        </property>
+        <property name="maximum" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="decimals" >
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="KDoubleNumInput" name="kcfg_val_diffuse" >
+        <property name="value" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="maximum" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="decimals" >
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" >
+       <widget class="KDoubleNumInput" name="kcfg_val_specular" >
+        <property name="value" >
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="decimals" >
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Diffuse:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>Specular:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Ambient:</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
@@ -95,8 +195,8 @@ p, li { white-space: pre-wrap; }
    <header>kcolorbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KDoubleNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
  </customwidgets>
@@ -104,5 +204,25 @@ p, li { white-space: pre-wrap; }
   <include location="local" >kcolorbutton.h</include>
  </includes>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>kcfg_val_light</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>lightSettings</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>72</x>
+     <y>63</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>241</x>
+     <y>201</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>lightDefaults()</slot>
+ </slots>
 </ui>

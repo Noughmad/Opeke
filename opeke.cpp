@@ -22,7 +22,6 @@
 #include "opeke.h"
 #include "opeketool.h"
 #include "settings.h"
-#include <iostream>
 
 #include <QtGui/QDropEvent>
 #include <QtGui/QMainWindow>
@@ -56,27 +55,20 @@ Opeke::Opeke()
 	// tell the KXmlGuiWindow that this is indeed the main widget
 	m_view = new OpekeView ( this );
 	m_tool = new OpekeTool ( this );
+	m_tool->setObjectName("Tool Options");
 	m_dockWidget = new QDockWidget(this);
+	m_dockWidget->setWidget(m_tool);
 	m_dockWidget->setObjectName("Tool Dock");
 	addDockWidget (Qt::LeftDockWidgetArea, m_dockWidget);
-	m_dockWidget->setWidget(m_tool);
 	m_tool->show();
 	setCentralWidget (m_view);
 	m_view->setFocus();
 
-	// then, setup our actions
 	setupActions();
 	undoAct->setEnabled(false);
 	redoAct->setEnabled(false);
 
-	// add a status bar
 	statusBar()->show();
-
-	// a call to KXmlGuiWindow::setupGUI() populates the GUI
-	// with actions, using KXMLGUI.
-	// It also applies the saved mainwindow settings, if any, and ask the
-	// mainwindow to automatically save settings if changed: window size,
-	// toolbar position, icon size, etc.
 	
 	setupGUI();
 	
@@ -107,7 +99,7 @@ void Opeke::setupActions()
 	removeAct->setText( i18n ("Delete"));
 	removeAct->setEnabled(false);
 
-	// The action to start building Bricks in OpenGL
+	// The action to start building Bricks in OGRE
 	KAction *build = new KAction ( KIcon ( "build" ), i18n ( "Build" ), this );
 	build->setShortcut(QKeySequence(Qt::Key_B));
 	actionCollection()->addAction ( QLatin1String ( "build_action" ), build );
@@ -130,14 +122,12 @@ void Opeke::setupActions()
 	block->setShortcut(QKeySequence(Qt::Key_L));
 	actionCollection()->addAction(QLatin1String("block_action"), block);
 	connect (block, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeBlock() ));
-	connect (block, SIGNAL (triggered (bool)), m_tool, SLOT (changeTypeBlock() ));
 	connect (block, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
 	
 	KAction *roof = new KAction (KIcon ( "roof" ), i18n ("Build &Roof"), this);
 	roof->setShortcut(QKeySequence(Qt::Key_R));
 	actionCollection()->addAction(QLatin1String("roof_action"), roof);
 	connect (roof, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeRoof()));
-	connect (roof, SIGNAL (triggered (bool)), m_tool, SLOT (changeTypeRoof()));
 	connect (roof, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
 
 
@@ -145,30 +135,48 @@ void Opeke::setupActions()
 	cylinder->setShortcut(QKeySequence(Qt::Key_C));
 	actionCollection()->addAction(QLatin1String("cylinder_action"), cylinder);
 	connect (cylinder, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeCylinder() ));
-	connect (cylinder, SIGNAL (triggered (bool)), m_tool, SLOT (changeTypeCylinder() ));
 	connect (cylinder, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
 	
 	KAction *invCyl = new KAction (KIcon ("invCyl"), i18n ("Build &Inverted Cylinder"), this);
 	invCyl->setShortcut(QKeySequence(Qt::Key_I));
 	actionCollection()->addAction(QLatin1String("invCyl_action"), invCyl);
 	connect (invCyl, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeInvCyl() ));
-	connect (invCyl, SIGNAL (triggered (bool)), m_tool, SLOT (changeTypeInvCyl() ));
 	connect (invCyl, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
 	
 	KAction *sphere = new KAction (KIcon ("sphere"), i18n ("Build &Sphere"), this);
 	sphere->setShortcut(QKeySequence(Qt::Key_S));
 	actionCollection()->addAction(QLatin1String("sphere_action"), sphere);
 	connect (sphere, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeSphere() ));
-	connect (sphere, SIGNAL (triggered (bool)), m_tool, SLOT (changeTypeSphere() ));
 	connect (sphere, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
+	
+	KAction *cone = new KAction (KIcon ( "cone" ), i18n ("Build Co&ne"), this);
+	cone->setShortcut(QKeySequence(Qt::Key_N));
+	actionCollection()->addAction(QLatin1String("cone_action"), cone);
+	connect (cone, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeCone() ));
+	connect (cone, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
+	
+	KAction *corner = new KAction (KIcon ( "corner" ), i18n ("Build Roof C&orner"), this);
+	corner->setShortcut(QKeySequence(Qt::Key_O));
+	actionCollection()->addAction(QLatin1String("corner_action"), corner);
+	connect (corner, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeCorner() ));
+	connect (corner, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
+	
+	KAction *invrcor = new KAction (KIcon ( "invrcor" ), i18n ("Build In&verted Roof Corner"), this);
+	invrcor->setShortcut(QKeySequence(Qt::Key_V));
+	actionCollection()->addAction(QLatin1String("invrcor_action"), invrcor);
+	connect (invrcor, SIGNAL (triggered (bool)), m_view, SLOT (changeTypeInvCorner() ));
+	connect (invrcor, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
+	
+	KAction *pyramid = new KAction (KIcon ( "pyramid" ), i18n ("Build &Pyramid"), this);
+	pyramid->setShortcut(QKeySequence(Qt::Key_P));
+	actionCollection()->addAction(QLatin1String("pyramid_action"), pyramid);
+	connect (pyramid, SIGNAL (triggered (bool)), m_view, SLOT (changeTypePyramid() ));
+	connect (pyramid, SIGNAL (triggered (bool)), m_view, SLOT (setBuildMode() ));
 	
 	KAction *snapshot = new KAction (KIcon ("ksnapshot"), i18n ("&Take Screenshot"), this);
 	snapshot->setShortcut(QKeySequence("Ctrl+T"));
 	actionCollection()->addAction(QLatin1String("snapshot_action"), snapshot);
 	connect (snapshot, SIGNAL(triggered(bool)), this, SLOT (saveScreen()));
-		
-	connect (m_tool, SIGNAL(setOrientation(int)), m_view, SLOT (changeOrientation(int)));
-	connect (m_tool, SIGNAL(setCylOrientation(int)), m_view, SLOT(changeOrientation(int)));
 
 	// Reload the field after loading a new file
 	connect ( this, SIGNAL ( reload() ), m_view, SLOT ( update() ) );
@@ -182,7 +190,7 @@ void Opeke::setupActions()
 	connect ( m_tool, SIGNAL ( sizeXChanged ( int ) ), m_view, SLOT ( setSizeX ( int ) ) );
 	connect ( m_tool, SIGNAL ( sizeYChanged ( int ) ), m_view, SLOT ( setSizeY ( int ) ) );
 	connect ( m_tool, SIGNAL ( sizeZChanged ( int ) ), m_view, SLOT ( setSizeZ ( int ) ) );
-	connect ( m_view, SIGNAL(planeChanged(int)), m_tool, SLOT(setPlaneZ(int)));
+	connect ( m_view, SIGNAL(planeChanged(int)), m_tool, SLOT(changePlaneZ(int)));
 
 	connect ( m_view, SIGNAL(undoEmpty(bool)), this, SLOT(undoEnable(bool)));
 	connect ( m_view, SIGNAL(redoEmpty(bool)), this, SLOT(redoEnable(bool)));
@@ -192,11 +200,6 @@ void Opeke::setupActions()
 	connect (m_tool, SIGNAL(rotX()), m_view, SLOT(rotateX()));
 	connect (m_tool, SIGNAL(rotY()), m_view, SLOT(rotateY()));
 	connect (m_tool, SIGNAL(rotZ()), m_view, SLOT(rotateZ()));
-
-	connect (m_tool, SIGNAL(getCylOrientation()), m_view, SLOT(sendOrientation()));
-	connect (m_view, SIGNAL(signalOrientation(int)), m_tool, SLOT(changeCylOrientation(int)));
-	
-	connect (this, SIGNAL(BricksLoaded(QList<Brick*>)), m_view, SLOT(openBricks(QList<Brick*>)));
 }
 
 void Opeke::fileNew()

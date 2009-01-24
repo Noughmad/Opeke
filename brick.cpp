@@ -31,7 +31,7 @@ Brick::Brick ( Ogre::SceneNode* node, Ogre::Entity* entity )
 	mEntity = entity;
 	mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
 	mColor = mMaterial->getTechnique(0)->getPass(0)->getAmbient();
-	mOrientation = 0;
+	mOrientation = mNode->getOrientation();
 	mHidden = false;
 	mSelected = false;
 }
@@ -63,14 +63,14 @@ int Brick::type()
 	return mType;
 }
 
-void Brick::setOrientation ( int o )
+void Brick::setOrientation ( Ogre::Quaternion o )
 {
-	mOrientation = o;
+	mNode->setOrientation(o);
 }
 
-int Brick::orientation()
+Ogre::Quaternion Brick::orientation()
 {
-	return mOrientation;
+	return mNode->getOrientation();
 }
 
 void Brick::setColor ( QColor c )
@@ -83,7 +83,8 @@ void Brick::setColor ( Ogre::ColourValue c )
 	mColor =  c;
 	if ( !mMaterial ) mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
 	mMaterial->setAmbient ( c );
-	mMaterial->setDiffuse ( Ogre::ColourValue(c.r, c.g, c.b, c.a*0.5  ));
+	if (mSelected) mMaterial->setDiffuse(c/2);
+	else mMaterial->setDiffuse(c);
 	mMaterial->setSpecular(c);
 }
 
@@ -194,8 +195,16 @@ bool Brick::isSelected() const
 
 void Brick::setSelected ( bool s )
 {
-	if ( s ) mMaterial->setSceneBlending ( Ogre::SBT_TRANSPARENT_ALPHA );
-	else mMaterial->setSceneBlending ( Ogre::SBT_REPLACE );
+	if ( s ) 
+	{
+		mMaterial->setDiffuse(mColor/2);
+		mMaterial->setSceneBlending ( Ogre::SBT_TRANSPARENT_ALPHA );
+	}
+	else
+	{
+		mMaterial->setDiffuse(mColor);
+		mMaterial->setSceneBlending ( Ogre::SBT_REPLACE );
+	}
 	mSelected = s;
 }
 

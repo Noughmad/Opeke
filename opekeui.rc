@@ -4,24 +4,42 @@
 		<text>Main Toolbar</text>
 		<Action name="build_action" />
 		<Action name="select_action" />
+		<Action name="grid_action" />
+		<Action name="snapshot_action" />
+	</ToolBar>
+	<ToolBar name="ShapesToolBar" >
+		<text>Shapes Toolbar</text>
 		<Action name="block_action" />
-		<Action name="roof_action" />
-		<Menu name="build"><text>&amp;Round shapes</text>
+		<Menu name="roof"><text>&amp;Roof Shapes</text>
+			<Action name="block_action" />
+			<Action name="roof_action" />
+			<Action name="corner_action" />
+			<Action name="invrcor_action" />
+			<Action name="pyramid_action" />
+		</Menu>
+		<Menu name="round"><text>&amp;Round Shapes</text>
 			<Action name="cylinder_action" />
 			<Action name="invCyl_action" />
 			<Action name="sphere_action" />
+			<Action name="cone_action" />
 		</Menu>
 	</ToolBar>
 <MenuBar>
   <Menu name="action"><text>&amp;Actions</text>
 	<Action name="build_action" />
 	<Action name="select_action" />
-	<Menu name="build"><text>&amp;Build</text>
-		<Action name="block_action" />
+	<Action name="block_action" />
+	<Menu name="roof"><text>&amp;Roof Shapes</text>
 		<Action name="roof_action" />
+		<Action name="corner_action" />
+		<Action name="invrcor_action" />
+		<Action name="pyramid_action" />
+	</Menu>
+	<Menu name="round"><text>&amp;Round Shapes</text>
 		<Action name="cylinder_action" />
 		<Action name="invCyl_action" />
 		<Action name="sphere_action" />
+		<Action name="cone_action" />
 	</Menu>
 	<Action name="snapshot_action" />
   </Menu>

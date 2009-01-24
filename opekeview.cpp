@@ -38,10 +38,6 @@
 #define PI 3.141592
 #define VERSION "0.4"
 
-/**
- * TODO: LIGHTS, SHADES, AND LIGHTS!
- */
-
 OpekeView::OpekeView ( QWidget * )
 		: fileName ( QString() )
 
@@ -66,6 +62,7 @@ OpekeView::OpekeView ( QWidget * )
 	maxHeight = 25;
 	planeZ = 0;
 	mColor = Ogre::ColourValue ( 1.0, 0.0, 0.0, 1.0 );
+	mOrientation = Ogre::Quaternion::IDENTITY;
 
 	Bricks.clear();
 	undoList.clear();
@@ -83,7 +80,9 @@ void OpekeView::setupOgre()
 {
 	try
 	{
-		mRoot = new Ogre::Root ( "/home/miha/kde-devel/share/apps/opeke/plugins.cfg","ogre.cfg","ogre.log" );
+		mRoot = new Ogre::Root ("ogre.cfg","ogre.log" );
+		mRoot->loadPlugin("/usr/lib/OGRE/RenderSystem_GL");
+		mRoot->setRenderSystem((*(mRoot->getAvailableRenderers())).front());
 		if ( !mRoot->restoreConfig() )
 		{
 			if ( !mRoot->showConfigDialog() )
@@ -92,8 +91,11 @@ void OpekeView::setupOgre()
 			}
 		}
 
-		Ogre::ConfigFile cf;
-		cf.load ( "/home/miha/kde-devel/share/apps/opeke/resources.cfg" );
+		mRoot->addResourceLocation("/usr/local/share/apps/opeke/", "FileSystem");
+		mRoot->addResourceLocation("/usr/share/apps/opeke/", "FileSystem");
+
+	/*	Ogre::ConfigFile cf;
+		cf.load ( "../share/apps/opeke/resources.cfg" );
 
 		Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
 		while ( seci.hasMoreElements() )
@@ -107,6 +109,8 @@ void OpekeView::setupOgre()
 				mRoot->addResourceLocation ( archName, typeName, secName );
 			}
 		}
+		
+		*/
 
 		QX11Info windowInfo = x11Info ();
 
@@ -125,11 +129,6 @@ void OpekeView::setupOgre()
 		mMaterialManager = Ogre::MaterialManager::getSingletonPtr();
 		mCamera = mSceneManager->createCamera ( "Camera" );
 		mViewport = mWindow->addViewport ( mCamera );
-		mSceneManager->destroyAllLights();
-		mLight = mSceneManager->createLight ( "MainLight" );
-		mLightNode = mSceneManager->getRootSceneNode()->createChildSceneNode("LightNode");
-		mLightNode->attachObject(mLight);
-		mLightNode->attachObject(mCamera);
 	}
 	catch ( Ogre::Exception& e )
 	{
@@ -140,7 +139,14 @@ void OpekeView::setupOgre()
 
 void OpekeView::setupScene()
 {
-	mSceneManager->setAmbientLight(Ogre::ColourValue(0.2, 0.2, 0.2));
+	mMaterialManager->removeAll();
+	mSceneManager->destroyAllLights();
+	mLight = mSceneManager->createLight ( "MainLight" );
+	mLightNode = mSceneManager->getRootSceneNode()->createChildSceneNode("LightNode");
+	mLightNode->attachObject(mLight);
+	mLightNode->attachObject(mCamera);
+	
+	mSceneManager->setAmbientLight(Ogre::ColourValue(0.4, 0.4, 0.4));
 	mLightNode->setPosition ( Ogre::Vector3 ( 0.0f, -200.0f, 100.0f ) );
 	mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
 	mCamera->setNearClipDistance ( 5.0f );
@@ -153,13 +159,15 @@ void OpekeView::setupScene()
 	mLight->setVisible(true);
 	mLight->setType(Ogre::Light::LT_DIRECTIONAL);
 	mLight->setPosition ( 0,0,0 );
-	mLight->setDirection(0,0,-1);
+	mLight->setDirection(0,-0.3,-1.0);
 	mLight->setDiffuseColour ( 1.0, 1.0, 1.0 );
-	mLight->setSpecularColour ( 0.5, 0.5, 0.5 );
+	mLight->setSpecularColour ( 0.2, 0.2, 0.2 );
 
 	nodeCount = 0;
 	mMaterial = mMaterialManager->getDefaultSettings().getPointer();
 
+	mMaterial->setLightingEnabled(true);
+	mMaterial->setShadingMode(Ogre::SO_FLAT);
 	mMaterial->setSelfIllumination(0.0, 0.0, 0.0);
 	mMaterial->setAmbient ( 0.5, 0.5, 0.5 );
 	mMaterial->setDiffuse ( 1.0, 1.0, 1.0, 1.0 );
@@ -227,7 +235,6 @@ void OpekeView::mousePressEvent ( QMouseEvent *event )
 					{
 						preMovePos = activeBrick->position();
 						preChangeColor = activeBrick->getOgreColor();
-						kDebug() << preChangeColor.r << preChangeColor.g << preChangeColor.b;
 					}
 				}
 			break;
@@ -245,7 +252,7 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 	if ( event->buttons() == Qt::RightButton )
 	{
 		current = Ogre::Vector3 ( -event->x(), event->y(), 0 );
-		mLightNode->translate((current-moving));
+		mLightNode->translate((current-moving)*mLightNode->getPosition().length()/1200, Ogre::Node::TS_LOCAL);
 		moving = current;
 	}
 	else if ( mode == 1 )
@@ -255,10 +262,10 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 		if (discretePosition)
 		{
 			Ogre::Vector3 p;
-			p.x = 4*(int)(pos.x/4);
-			p.y = 4*(int)(pos.y/4);
-			p.x = 4*(int)(pos.x/4);
-			p.z = 4*(int)(pos.z/4);
+			p.x = 2*(int)(pos.x/2);
+			p.y = 2*(int)(pos.y/2);
+			p.x = 2*(int)(pos.x/2);
+			p.z = 2*(int)(pos.z/2);
 			activeBrick->setPosition(p);
 		}
 		else activeBrick->setPosition(pos);
@@ -323,16 +330,6 @@ void OpekeView::mouseReleaseEvent ( QMouseEvent *event )
 
 void OpekeView::keyPressEvent ( QKeyEvent* event )
 {
-	
-	/**
-	 * Always move the Light with the Camera
-	 * 
-	 * TODO:
-	 * Fix what happens when the LightNode is not pointed to the (0,0,0)
-	 * 
-	 * DO NOT TRY TO ROTATE THE SCENE
-	 * ROTATE THE LIGHT AND CAMERA (mLightNode) ONLY 
-	 */
 	float mod = 10.0;
 	if ( event->isAutoRepeat() ) mod *= 2;
 	else if (activeBrick) preMovePos = activeBrick->position();
@@ -393,11 +390,6 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 	}
 	else
 	{
-		/**
-		 * TODO:
-		 * Fix this if the camera doesn't poith towards 0,0,0.
-		 * There must be a way.
-		 */
 		Ogre::Vector3 tPos = -mLightNode->getPosition();
 		Ogre::Real distance = tPos.length();
 		Ogre::Quaternion qOr = mLightNode->getOrientation();
@@ -406,14 +398,12 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 			switch ( event->key() )
 			{
 				case ( Qt::Key_Up ) :
-					kDebug() << tPos.distance(Ogre::Vector3(0,0,0));
 					mLightNode->lookAt(Ogre::Vector3(0,0,0), Ogre::Node::TS_WORLD);
 					mLightNode->translate(Ogre::Vector3(0,0,distance), Ogre::Node::TS_LOCAL); 
 					mLightNode->pitch(Ogre::Radian ( mod/400 ));
 					mLightNode->translate(Ogre::Vector3(0,0,-distance*400.0/399.0), Ogre::Node::TS_LOCAL); 
 					mLightNode->setOrientation(qOr);
 					mLightNode->pitch(Ogre::Radian(-mod/399));
-					kDebug() << tPos.distance(Ogre::Vector3(0,0,0));
 					break;
 
 				case ( Qt::Key_Down ) :
@@ -445,11 +435,11 @@ void OpekeView::keyPressEvent ( QKeyEvent* event )
 					break;
 				
 				case ( Qt::Key_2 ) :
-					mLightNode->translate(Ogre::Vector3 ( 0, 0, -mod*2 ), Ogre::Node::TS_LOCAL );
+					mLightNode->translate(Ogre::Vector3 ( 0, 0, mod ), Ogre::Node::TS_LOCAL );
 					break;
 
 				case ( Qt::Key_8 ) :
-					mLightNode->translate(mLightNode->getLocalAxes(),  Ogre::Vector3 ( 0, 0, mod*1 ) );
+					mLightNode->translate(Ogre::Vector3 ( 0, 0, -mod ) , Ogre::Node::TS_LOCAL);
 					break;
 
 				case ( Qt::Key_4 ) :
@@ -531,14 +521,13 @@ void OpekeView::wheelEvent ( QWheelEvent *event )
 	}
 	else
 	{
-		mCamera->moveRelative ( Ogre::Vector3 ( 0, 0, event->delta() /10 ) );
+		mLightNode->translate ( Ogre::Vector3 ( 0, 0, event->delta() /10 ) , Ogre::Node::TS_LOCAL );
 	}
 	update();
 }
 
 Brick* OpekeView::newBrick ( int type )
 {
-	kDebug() << type;
 	nodeCount++;
 	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
 	Ogre::Entity* activeEntity;
@@ -561,6 +550,18 @@ Brick* OpekeView::newBrick ( int type )
 		case Brick::InvertedCylinder:
 			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "invcyl.mesh" );
 			break;
+		case Brick::Cone:
+			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "cone.mesh" );
+			break;
+		case Brick::CornerRoof:
+			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "corner.mesh" );
+			break;
+		case Brick::Pyramid:
+			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "pyramid.mesh" );
+			break;
+		case Brick::InvertedRoofCorner:
+			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "invrcor.mesh" );
+			break;
 		default:
 			activeEntity = mSceneManager->createEntity ( "Brick" + Ogre::StringConverter::toString ( nodeCount ) , "block.mesh" );
 			break;
@@ -571,6 +572,7 @@ Brick* OpekeView::newBrick ( int type )
 	mBrick->setType(type);
 	mBrick->setColor ( mColor );
 	mBrick->setSize ( mSize );
+	mBrick->setOrientation(mOrientation);
 	return mBrick;
 }
 
@@ -642,10 +644,10 @@ void OpekeView::newScene()
 	foreach ( Brick *b, Bricks ) delete b;
 	Bricks.clear();
 	mSceneManager->clearScene();
+	setupScene();
 	setBuildMode();
 	undoList.clear();
 	redoList.clear();
-	activeBrick = 0;
 	update();
 	emit undoEmpty ( true );
 	emit redoEmpty ( true );
@@ -674,6 +676,21 @@ void OpekeView::settingsChanged()
 	maxHeight = Settings::val_maxh();
 	bgColor = Settings::col_background();
 	discretePosition = Settings::val_discrete();
+	if (mSceneManager)
+	{
+		if (Settings::val_light())
+		{
+			mSceneManager->setAmbientLight(Settings::val_ambient() * Ogre::ColourValue::White);
+			mLight->setDiffuseColour(Settings::val_diffuse() * Ogre::ColourValue::White);
+			mLight->setSpecularColour(Settings::val_specular() * Ogre::ColourValue::White);
+		}
+		else
+		{
+			mSceneManager->setAmbientLight(0.5 * Ogre::ColourValue::White);
+			mLight->setDiffuseColour(1.0 * Ogre::ColourValue::White);
+			mLight->setSpecularColour(0.0 * Ogre::ColourValue::White);
+		}
+	}
 
 	if (mViewport) mViewport->setBackgroundColour ( Brick::toOgreColour ( bgColor ) );
 
@@ -793,12 +810,11 @@ void OpekeView::redo()
 
 void OpekeView::changeType ( int changedType )
 {
-	kDebug ( "OMG" );
 	mBrickType = changedType;
 	if ( mode == 1 && activeBrick )
 	{
 		delete activeBrick;
-		activeBrick = newBrick();
+		activeBrick = newBrick(changedType);
 	}
 	update();
 }
@@ -828,36 +844,59 @@ void OpekeView::changeTypeSphere()
 	changeType ( Brick::Sphere );
 }
 
-void OpekeView::changeOrientation ( int changedOrientation )
+void OpekeView::changeTypeCone()
 {
-	if ( activeBrick ) activeBrick->setOrientation ( changedOrientation );
+	changeType ( Brick::Cone );
+}
+
+void OpekeView::changeTypeCorner()
+{
+	changeType ( Brick::CornerRoof );
+}
+
+void OpekeView::changeTypePyramid()
+{
+	changeType ( Brick::Pyramid );
+}
+
+void OpekeView::changeTypeInvCorner()
+{
+	changeType ( Brick::InvertedRoofCorner );
 }
 
 void OpekeView::rotateX()
 {
-	if ( activeBrick ) activeBrick->node()->pitch ( Ogre::Radian ( PI/2 ) );
+	if ( activeBrick ) 
+	{
+		activeBrick->node()->pitch (Ogre::Radian ( PI/2 ));
+		mOrientation = activeBrick->orientation();
+	}
 	update();
 }
 
 void OpekeView::rotateY()
 {
-	if ( activeBrick ) activeBrick->node()->yaw ( Ogre::Radian ( PI/2 ) );
+	if ( activeBrick ) 
+	{
+		activeBrick->node()->yaw ( Ogre::Radian ( PI/2 ) );
+		mOrientation = activeBrick->orientation();
+	}
 	update();
 }
 
 void OpekeView::rotateZ()
 {
-	if ( activeBrick ) activeBrick->node()->roll ( Ogre::Radian ( PI/2 ) );
+	if ( activeBrick ) 
+	{
+		activeBrick->node()->roll ( Ogre::Radian ( PI/2 ) );
+		mOrientation = activeBrick->orientation();
+	}
 	update();
-}
-
-void OpekeView::sendOrientation()
-{
-	if ( activeBrick ) emit signalOrientation ( activeBrick->orientation() );
 }
 
 void OpekeView::openBricks ( QFile* file )
 {
+	newScene();
 	QDataStream in ( file );
 	QString fileVersion, program;
 	in >> program >> fileVersion;
@@ -938,7 +977,6 @@ void OpekeView::openBricks ( QFile* file )
 
 			int tOrientation;
 			in >> tOrientation;
-			br->setOrientation ( tOrientation );
 
 			QColor color;
 			in>>color;
@@ -950,21 +988,21 @@ void OpekeView::openBricks ( QFile* file )
 	else if ( fileVersion == "0.4" )
 	{
 		Ogre::Vector3 oSize, oPos;
-		int oType, oOrientation;
+		int oType;
+		Ogre::Quaternion qOri;
 		QColor oColor;
 		Brick* oBrick;
 		while ( !in.atEnd() )
 		{
-			kDebug() << "Loading a brick";
 			in >> oType;
 			in >> oPos.x >> oPos.y >> oPos.z;
 			in >> oSize.x >> oSize.y >> oSize.z;
-			in >> oColor >> oOrientation;
+			in >> oColor >> qOri.x >> qOri.y >> qOri.z >> qOri.w;
 			oBrick = newBrick(oType);
 			oBrick->setPosition(oPos);
 			oBrick->setSize(oSize);
 			oBrick->setColor(oColor);
-			oBrick->setOrientation(oOrientation);
+			oBrick->setOrientation(qOri);
 			Bricks.append(oBrick);
 		}
 	}
@@ -988,18 +1026,32 @@ void OpekeView::saveBricks ( KSaveFile* file )
 	QString program = "Opeke", fileVersion = VERSION;
 	output << program << fileVersion;
 	Ogre::Vector3 sSize, sPos;
+	Ogre::Quaternion qOri;
 	foreach ( Brick *b, Bricks )
 	{
 		if ( b && !b->isHidden() )
 		{
 			sSize = b->size();
 			sPos = b->position();
+			qOri = b->orientation();
 			output << b->type();
 			output << sPos.x << sPos.y << sPos.z;
 			output << sSize.x << sSize.y << sSize.z;
-			output << b->color() << b->orientation();
+			output << b->color();
+			output << qOri.x << qOri.y << qOri.z << qOri.w;
 		}
 	}
+}
+
+void OpekeView::flipGridEnabled()
+{
+	discretePosition = !discretePosition;
+}
+
+void OpekeView::changeOrientation(Ogre::Quaternion changedOrientation)
+{
+	if (activeBrick) activeBrick->setOrientation(changedOrientation);
+	mOrientation = changedOrientation;
 }
 
 #include "opekeview.moc"

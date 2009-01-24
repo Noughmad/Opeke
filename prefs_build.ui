@@ -5,29 +5,38 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>199</width>
+    <height>48</height>
    </rect>
   </property>
   <property name="windowTitle" >
    <string>Form</string>
   </property>
-  <widget class="QCheckBox" name="kcfg_val_discrete" >
-   <property name="geometry" >
-    <rect>
-     <x>50</x>
-     <y>70</y>
-     <width>211</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip" >
-    <string>If checked, bricks you build will be placed onto an integer grid. Otherwise, they will be moved freely.</string>
-   </property>
-   <property name="text" >
-    <string>Discrete brick placement</string>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout" >
+   <item row="1" column="1" >
+    <spacer name="verticalSpacer_2" >
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0" >
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" >
+    <widget class="QCheckBox" name="kcfg_val_discrete" >
+     <property name="toolTip" >
+      <string>If checked, bricks you build will be placed onto an integer grid. Otherwise, they will be moved freely.</string>
+     </property>
+     <property name="text" >
+      <string>Discrete brick placement</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

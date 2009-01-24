@@ -56,8 +56,6 @@ class OpekeTool : public QWidget
 		KPushButton *b_rotateX;
 		KPushButton *b_rotateY;
 		KPushButton *b_rotateZ;
-		KComboBox *b_orientation;
-		KComboBox *b_orientation_cyl;
 
 		void setupUi();
 		void setupActions();
@@ -66,33 +64,14 @@ class OpekeTool : public QWidget
 		void resizeEvent(QResizeEvent *event);
 
 	private slots:
-		void refresh();
 		void rotateX();
 		void rotateY();
 		void rotateZ();
-		void changeType(int changedType);
-		void changeTypeBlock();
-		void changeTypeRoof();
-		void changeTypeCylinder();
-		void changeTypeInvCyl();
-		void changeTypeSphere();
 		
 		void changePlaneZ(int);
-		void changeOrientation(int changedOrientation);
-		void changeCylOrientation(int changedOrientation);
-				
+	
 	signals:
 		void changeTool ( const int toolID );
-		void tool_refresh();
-
-		void changeSizeX ( int );
-		void changeSizeY ( int );
-		void changeSizeZ ( int );
-		
-		void setOrientation(int);
-		void setCylOrientation(int);
-	//	void getOrientation();
-		void getCylOrientation();
 		
 		void rotX();
 		void rotY();
@@ -103,7 +82,7 @@ class OpekeTool : public QWidget
 		void planeChanged(int);
 		void sizeXChanged(int);
 		void sizeYChanged(int);
-		void sizezChanged(int);
+		void sizeZChanged(int);
 };
 
 #endif //opekeTOOL_H
