@@ -19,7 +19,6 @@ opekeview.h
 opekeview_base.ui
 prefs_base.ui
 prefs_build.ui
-prefs_mouse.ui
 settings.kcfgc
 undoaction.cpp
 undoaction.h

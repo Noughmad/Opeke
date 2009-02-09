@@ -30,7 +30,7 @@ class Brick
 {
 	public:
 		
-		Brick(Ogre::SceneNode* node, Ogre::Entity* entity);
+		Brick ( Ogre::SceneNode* sizeNode, Ogre::SceneNode* rotNode, Ogre::Entity* entity );
 		virtual ~Brick();
 		
 		/**
@@ -38,12 +38,7 @@ class Brick
 		 */
 		
 		enum BrickType {Block, Roof, Cylinder, InvertedCylinder, Sphere, Cone, CornerRoof, Pyramid, InvertedRoofCorner};
-		
-		void setNode(Ogre::SceneNode* n);
-		Ogre::SceneNode* node();
-		
-		void setEntity(Ogre::Entity* e);
-		Ogre::Entity* entity();	
+
 
 		void setType(int t);
 		int type();
@@ -92,7 +87,8 @@ class Brick
 	protected:
 		
 		Ogre::Entity* mEntity;
-		Ogre::SceneNode* mNode;
+		Ogre::SceneNode* mSizeNode;
+		Ogre::SceneNode* mRotateNode;
 		Ogre::Material* mMaterial;
 		int mType;
 		Ogre::Quaternion mOrientation;

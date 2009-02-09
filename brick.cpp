@@ -24,34 +24,30 @@
 #include <KDebug>
 
 #include <Ogre.h>
+#define PI 3.141592
 
-Brick::Brick ( Ogre::SceneNode* node, Ogre::Entity* entity )
+
+Brick::Brick ( Ogre::SceneNode* sizeNode, Ogre::SceneNode* rotNode, Ogre::Entity* entity )
 {
-	mNode = node;
+	mSizeNode = sizeNode;
+	mRotateNode = rotNode;
 	mEntity = entity;
 	mMaterial = mEntity->getSubEntity ( 0 )->getMaterial().getPointer();
 	mColor = mMaterial->getTechnique(0)->getPass(0)->getAmbient();
-	mOrientation = mNode->getOrientation();
+	mOrientation = mRotateNode->getOrientation();
 	mHidden = false;
 	mSelected = false;
 }
 
 Brick::~Brick()
 {
-	mNode->detachAllObjects();
-	mNode->getCreator()->destroyEntity(mEntity);
-	mNode->getCreator()->destroySceneNode(mNode->getName());
+	mRotateNode->detachAllObjects();
+	mSizeNode->detachAllObjects();
+	mSizeNode->getCreator()->destroyEntity(mEntity);
+	mRotateNode->getCreator()->destroySceneNode(mSizeNode->getName());
+	mRotateNode->getCreator()->destroySceneNode(mRotateNode->getName());
 }
 
-void Brick::setNode ( Ogre::SceneNode* n )
-{
-	mNode = n;
-}
-
-Ogre::SceneNode* Brick::node()
-{
-	return mNode;
-}
 
 void Brick::setType ( int t )
 {
@@ -65,12 +61,12 @@ int Brick::type()
 
 void Brick::setOrientation ( Ogre::Quaternion o )
 {
-	mNode->setOrientation(o);
+	mRotateNode->setOrientation(o);
 }
 
 Ogre::Quaternion Brick::orientation()
 {
-	return mNode->getOrientation();
+	return mRotateNode->getOrientation();
 }
 
 void Brick::setColor ( QColor c )
@@ -101,25 +97,25 @@ Ogre::ColourValue Brick::getOgreColor()
 void Brick::setSizeX ( int x )
 {
 	mSize.x = x;
-	mNode->setScale ( mSize );
+	mSizeNode->setScale ( mSize );
 }
 
 void Brick::setSizeY ( int y )
 {
 	mSize.y = y;
-	mNode->setScale ( mSize );
+	mSizeNode->setScale ( mSize );
 }
 
 void Brick::setSizeZ ( int z )
 {
 	mSize.z = z;
-	mNode->setScale ( mSize );
+	mSizeNode->setScale ( mSize );
 }
 
 void Brick::setSize ( Ogre::Vector3 s )
 {
 	mSize = s;
-	mNode->setScale ( mSize );
+	mSizeNode->setScale ( mSize );
 }
 
 Ogre::Vector3 Brick::size()
@@ -129,12 +125,12 @@ Ogre::Vector3 Brick::size()
 
 void Brick::setPosition ( Ogre::Vector3 pos )
 {
-	mNode->setPosition ( pos );
+	mSizeNode->setPosition ( pos );
 }
 
 Ogre::Vector3 Brick::position()
 {
-	return mNode->getPosition();
+	return mSizeNode->getPosition();
 }
 
 void Brick::move ( float x, float y, float z )
@@ -145,35 +141,24 @@ void Brick::move ( float x, float y, float z )
 
 void Brick::move ( Ogre::Vector3 v )
 {
-	mNode->translate ( v );
+	mSizeNode->translate ( v );
 }
 
 void Brick::rotateX()
 {
-
+	mRotateNode->yaw(Ogre::Radian ( PI/2 ) );
 }
 
 void Brick::rotateY()
 {
-
+	mRotateNode->pitch(Ogre::Radian ( PI/2 )); 
 }
 
 void Brick::rotateZ()
 {
-
+	mRotateNode->roll(Ogre::Radian ( PI/2 ) );
 }
 
-void Brick::setEntity ( Ogre::Entity* entity )
-{
-	mNode->detachAllObjects();
-	mNode->attachObject ( entity );
-	mEntity = entity;
-}
-
-Ogre::Entity* Brick::entity()
-{
-	return mEntity;
-}
 
 Ogre::Material* Brick::material() const
 {
@@ -220,13 +205,13 @@ QColor Brick::toQColor ( Ogre::ColourValue c )
 
 void Brick::show()
 {
-	mNode->attachObject(mEntity);
+	mRotateNode->attachObject(mEntity);
 	mHidden = false;
 }
 
 void Brick::hide()
 {
-	mNode->detachObject(mEntity);
+	mRotateNode->detachObject(mEntity);
 	mHidden = true;
 }
 

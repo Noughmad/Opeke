@@ -1,6 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Opeke
+Name[sl]=Opeke
 MimeType=application/x-opeke
 Exec=opeke %i -caption "%c"
 Icon=Opeke
@@ -8,4 +9,5 @@ Type=Application
 DocPath=opeke/index.html
 Categories=Qt;KDE;Graphics;
 GenericName=Brick Building
+GenericName[sl]=Gradnja z opekami
 Terminal=0

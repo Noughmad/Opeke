@@ -35,7 +35,6 @@
 
 #include <math.h>
 
-#define PI 3.141592
 #define VERSION "0.4"
 
 OpekeView::OpekeView ( QWidget * )
@@ -230,12 +229,13 @@ void OpekeView::mousePressEvent ( QMouseEvent *event )
 
 					if ( activeBrick ) activeBrick->setSelected ( false );
 					activeBrick = setSelect ( event->x(), event->y() );
-					moving = transform ( event->x(), event->y() );
 					if ( activeBrick )
 					{
 						preMovePos = activeBrick->position();
 						preChangeColor = activeBrick->getOgreColor();
+						emit planeChanged(activeBrick->position().z);
 					}
+					moving = transform ( event->x(), event->y() );
 				}
 			break;
 		default:
@@ -529,7 +529,7 @@ void OpekeView::wheelEvent ( QWheelEvent *event )
 Brick* OpekeView::newBrick ( int type )
 {
 	nodeCount++;
-	Ogre::SceneNode* activeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "Node" + Ogre::StringConverter::toString ( nodeCount ) );
+	Ogre::SceneNode* sizeNode = mSceneManager->getRootSceneNode()->createChildSceneNode ( "SizeNode" + Ogre::StringConverter::toString ( nodeCount ) );
 	Ogre::Entity* activeEntity;
 	mMaterialManager->create ( "Material" + Ogre::StringConverter::toString ( nodeCount ), "General");
 
@@ -567,8 +567,9 @@ Brick* OpekeView::newBrick ( int type )
 			break;
 	}
 	activeEntity->setMaterialName ( "Material" + Ogre::StringConverter::toString ( nodeCount ) );
-	activeNode->attachObject ( activeEntity );
-	Brick* mBrick = new Brick ( activeNode, activeEntity );
+	Ogre::SceneNode* rotateNode = sizeNode->createChildSceneNode("RotateNode" + Ogre::StringConverter::toString(nodeCount));
+	rotateNode->attachObject ( activeEntity );
+	Brick* mBrick = new Brick ( sizeNode, rotateNode, activeEntity );
 	mBrick->setType(type);
 	mBrick->setColor ( mColor );
 	mBrick->setSize ( mSize );
@@ -625,7 +626,7 @@ Brick* OpekeView::setSelect ( int x, int y )
 
 	if ( closestObject )
 	{
-		sBrick = new Brick ( closestObject->getParentSceneNode(), ( Ogre::Entity* ) closestObject );
+		sBrick = new Brick ( closestObject->getParentSceneNode()->getParentSceneNode(), closestObject->getParentSceneNode(), ( Ogre::Entity* ) closestObject );
 		sBrick->setSelected ( true );
 		mRaySceneQuery->clearResults();
 		emit delEnable ( true );
@@ -756,7 +757,12 @@ void OpekeView::setSizeZ ( int z )
 
 void OpekeView::setPlaneZ ( int plane )
 {
-	if ( activeBrick ) activeBrick->move ( Ogre::Vector3 ( 0, 0, plane - planeZ ) );
+	if ( activeBrick )
+	{
+		Ogre::Vector3 tPos = activeBrick->position();
+		tPos.z = plane;
+		activeBrick->setPosition(tPos);
+	}
 	planeZ = plane;
 	update();
 }
@@ -868,7 +874,7 @@ void OpekeView::rotateX()
 {
 	if ( activeBrick ) 
 	{
-		activeBrick->node()->pitch (Ogre::Radian ( PI/2 ));
+		activeBrick->rotateX ();
 		mOrientation = activeBrick->orientation();
 	}
 	update();
@@ -878,7 +884,7 @@ void OpekeView::rotateY()
 {
 	if ( activeBrick ) 
 	{
-		activeBrick->node()->yaw ( Ogre::Radian ( PI/2 ) );
+		activeBrick->rotateY ( );
 		mOrientation = activeBrick->orientation();
 	}
 	update();
@@ -888,7 +894,7 @@ void OpekeView::rotateZ()
 {
 	if ( activeBrick ) 
 	{
-		activeBrick->node()->roll ( Ogre::Radian ( PI/2 ) );
+		activeBrick->rotateZ ();
 		mOrientation = activeBrick->orientation();
 	}
 	update();

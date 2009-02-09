@@ -262,6 +262,7 @@
       <path>placeholder.h</path>
       <path>opekeview_base_backup.ui</path>
       <path>opeke.kcfg~</path>
+      <path>prefs_display.ui</path>
     </blacklist>
     <general>
       <activedir/>
@@ -279,9 +280,6 @@
       <designerpluginpaths/>
     </qt>
     <references>
-      <pcs>Qt4</pcs>
-      <pcs>Ogre</pcs>
-      <pcs>KDElibs</pcs>
       <pcs>automatic_%2Fhome%2Fmiha%2Fkde-devel%2FOpeke</pcs>
     </references>
     <codecompletion>
