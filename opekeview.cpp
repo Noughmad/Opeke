@@ -262,10 +262,9 @@ void OpekeView::mouseMoveEvent ( QMouseEvent *event )
 		if (discretePosition)
 		{
 			Ogre::Vector3 p;
-			p.x = 2*(int)(pos.x/2);
-			p.y = 2*(int)(pos.y/2);
-			p.x = 2*(int)(pos.x/2);
-			p.z = 2*(int)(pos.z/2);
+			p.x = 2*(int)(pos.x/2) + ((int)pos.x % 2)/2;
+			p.y = 2*(int)(pos.y/2) + ((int)pos.y % 2)/2;
+			p.z = 2*(int)(pos.z/2) + ((int)pos.z % 2)/2;
 			activeBrick->setPosition(p);
 		}
 		else activeBrick->setPosition(pos);
@@ -295,9 +294,9 @@ void OpekeView::mouseReleaseEvent ( QMouseEvent *event )
 				if (discretePosition)
 				{
 					Ogre::Vector3 p;
-					p.x = 4*(int)(pos.x/4);
-					p.y = 4*(int)(pos.y/4);
-					p.z = 4*(int)(pos.z/4);
+					p.x = 2*(int)(pos.x/2) + ((int)pos.x % 2)/2;
+					p.y = 2*(int)(pos.y/2) + ((int)pos.y % 2)/2;
+					p.z = 2*(int)(pos.z/2) + ((int)pos.z % 2)/2;
 					activeBrick->setPosition(p);
 				}
 				else activeBrick->setPosition(pos);
