@@ -263,6 +263,7 @@
       <path>opekeview_base_backup.ui</path>
       <path>opeke.kcfg~</path>
       <path>prefs_display.ui</path>
+      <path>prefs_mouse.ui</path>
     </blacklist>
     <general>
       <activedir/>

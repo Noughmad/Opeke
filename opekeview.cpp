@@ -93,24 +93,6 @@ void OpekeView::setupOgre()
 		mRoot->addResourceLocation("/usr/local/share/apps/opeke/", "FileSystem");
 		mRoot->addResourceLocation("/usr/share/apps/opeke/", "FileSystem");
 
-	/*	Ogre::ConfigFile cf;
-		cf.load ( "../share/apps/opeke/resources.cfg" );
-
-		Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
-		while ( seci.hasMoreElements() )
-		{
-			Ogre::String secName = seci.peekNextKey();
-			Ogre::ConfigFile::SettingsMultiMap* settings = seci.getNext();
-			for ( Ogre::ConfigFile::SettingsMultiMap::iterator i = settings->begin(); i != settings->end(); ++i )
-			{
-				Ogre::String typeName = i->first;
-				Ogre::String archName = i->second;
-				mRoot->addResourceLocation ( archName, typeName, secName );
-			}
-		}
-		
-		*/
-
 		QX11Info windowInfo = x11Info ();
 
 		Ogre::String dspl = Ogre::StringConverter::toString ( ( unsigned long ) windowInfo.display() );
@@ -966,6 +948,10 @@ void OpekeView::openBricks ( QFile* file )
 	}
 	else if ( fileVersion == "0.3" )
 	{
+		KMessageBox::error ( this, i18n ( "Opening file from Opeke version 0.3 is currently not supported." ) );
+		return;
+		
+		/*
 		while ( !in.atEnd() )
 		{
 			int brickType;
@@ -989,6 +975,7 @@ void OpekeView::openBricks ( QFile* file )
 
 			Bricks.append ( br );
 		}
+		*/
 	}
 	else if ( fileVersion == "0.4" )
 	{
